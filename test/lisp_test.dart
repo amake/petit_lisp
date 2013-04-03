@@ -1,0 +1,423 @@
+// Copyright (c) 2013, Lukas Renggli <renggli@gmail.com>
+
+library lisp_test;
+
+import 'package:petitparser/lisp.dart';
+import 'package:unittest/unittest.dart';
+
+void main() {
+  var parser = new LispParser();
+
+  var root = new Environment();
+  var native = Natives.importNatives(root);
+  var standard = Natives.importStandard(native.create());
+
+  dynamic exec(String value, [Environment env]) {
+    return evalString(parser, env != null ? env : standard.create(), value);
+  }
+
+  group('Cell', () {
+    test('Symbol', () {
+      var cell1 = new Symbol('foo');
+      var cell2 = new Symbol('foo');
+      var cell3 = new Symbol('bar');
+      expect(cell1, cell2);
+      expect(cell1, same(cell2));
+      expect(cell1, isNot(cell3));
+      expect(cell1, isNot(same(cell3)));
+    });
+    test('Cons', () {
+      var cell = new Cons(1, 2);
+      expect(cell.head, 1);
+      expect(cell.tail, 2);
+      cell.head = 3;
+      expect(cell.head, 3);
+      expect(cell.tail, 2);
+      cell.tail = 4;
+      expect(cell.head, 3);
+      expect(cell.tail, 4);
+    });
+  });
+  group('Parser', () {
+    var atom = parser['atom'];
+    test('Symbol', () {
+      var cell = atom.parse('foo').result;
+      expect(cell, new isInstanceOf<Symbol>());
+      expect(cell.toString(), 'foo');
+    });
+    test('Symbol for operator', () {
+      var cell = atom.parse('+').result;
+      expect(cell, new isInstanceOf<Symbol>());
+      expect(cell.toString(), '+');
+    });
+    test('Symbol for special', () {
+      var cell = atom.parse('set!').result;
+      expect(cell, new isInstanceOf<Symbol>());
+      expect(cell.toString(), 'set!');
+    });
+    test('String', () {
+      var cell = atom.parse('"foo"').result;
+      expect(cell, new isInstanceOf<String>());
+      expect(cell, 'foo');
+    });
+    test('String with escape', () {
+      var cell = atom.parse('"\\""').result;
+      expect(cell, '"');
+    });
+    test('Number integer', () {
+      var cell = atom.parse('123').result;
+      expect(cell, 123);
+    });
+    test('Number negative integer', () {
+      var cell = atom.parse('-123').result;
+      expect(cell, -123);
+    });
+    test('Number positive integer', () {
+      var cell = atom.parse('+123').result;
+      expect(cell, 123);
+    });
+    test('Number floating', () {
+      var cell = atom.parse('123.45').result;
+      expect(cell, 123.45);
+    });
+    test('Number floating exponential', () {
+      var cell = atom.parse('1.23e4').result;
+      expect(cell, 1.23e4);
+    });
+    test('List empty', () {
+      var cell = atom.parse('()').result;
+      expect(cell, isNull);
+    });
+    test('List empty []', () {
+      var cell = atom.parse('[ ]').result;
+      expect(cell, isNull);
+    });
+    test('List empty {}', () {
+      var cell = atom.parse('{   }').result;
+      expect(cell, isNull);
+    });
+    test('List one element', () {
+      var cell = atom.parse('(1)').result;
+      expect(cell, new isInstanceOf<Cons>());
+      expect(cell.head, 1);
+      expect(cell.tail, isNull);
+    });
+    test('List two elements', () {
+      var cell = atom.parse('(1 2)').result;
+      expect(cell, new isInstanceOf<Cons>());
+      expect(cell.head, 1);
+      expect(cell.tail, new isInstanceOf<Cons>());
+      expect(cell.tail.head, 2);
+      expect(cell.tail.tail, isNull);
+    });
+    test('List three elements', () {
+      var cell = atom.parse('(+ 1 2)').result;
+      expect(cell, new isInstanceOf<Cons>());
+      expect(cell.head, new isInstanceOf<Symbol>());
+      expect(cell.head.toString(), '+');
+      expect(cell.tail, new isInstanceOf<Cons>());
+      expect(cell.tail.head, 1);
+      expect(cell.tail.tail, new isInstanceOf<Cons>());
+      expect(cell.tail.tail.head, 2);
+      expect(cell.tail.tail.tail, isNull);
+    });
+  });
+  group('Natives', () {
+    test('Define', () {
+      expect(exec('(define a 1)'), 1);
+      expect(exec('(define a 2) a'), 2);
+      expect(exec('((define (a) 3))'), 3);
+      expect(exec('(define (a) 4) (a)'), 4);
+      expect(exec('((define (a x) x) 5)'), 5);
+      expect(exec('(define (a x) x) (a 6)'), 6);
+    });
+    test('Lambda', () {
+      expect(exec('((lambda () 1) 2)'), 1);
+      expect(exec('((lambda (x) x) 2)'), 2);
+      expect(exec('((lambda (x) (+ x x)) 2)'), 4);
+      expect(exec('((lambda (x y) (+ x y)) 2 4)'), 6);
+      expect(exec('((lambda (x y z) (+ x y z)) 2 4 6)'), 12);
+    });
+    test('Quote', () {
+      expect(exec('(quote)'), null);
+      expect(exec('(quote 1)'), new Cons(1, null));
+      expect(exec('(quote + 1)'), new Cons(new Symbol('+'), new Cons(1, null)));
+    });
+    test('Quote (syntax)', () {
+      expect(exec('\'()'), null);
+      expect(exec('\'(1)'), new Cons(1, null));
+      expect(exec('\'(+ 1)'), new Cons(new Symbol('+'), new Cons(1, null)));
+    });
+    test('Eval', () {
+      expect(exec('(eval (quote + 1 2))'), 3);
+    });
+    test('Apply', () {
+      expect(exec('(apply + 1 2 3)'), 6);
+      expect(exec('(apply + 1 2 3 (+ 2 2))'), 10);
+    });
+    test('Let', () {
+      expect(exec('(let ((a 1)) a)'), 1);
+      expect(exec('(let ((a 1) (b 2)) a)'), 1);
+      expect(exec('(let ((a 1) (b 2)) b)'), 2);
+      expect(exec('(let ((a 1) (b 2)) (+ a b))'), 3);
+      expect(exec('(let ((a 1) (b 2)) (+ a b) 4)'), 4);
+    });
+    test('Set!', () {
+      var env = standard.create();
+      env.define(new Symbol('a'), null);
+      expect(exec('(set! a 1)', env), 1);
+      expect(exec('(set! a (+ 1 2))', env), 3);
+      expect(exec('(set! a (+ 1 2)) (+ a 1)', env), 4);
+    });
+    test('Set! (undefined)', () {
+      expect(() => exec('(set! a 1)'), throws);
+      expect(() => standard[new Symbol('a')], throws);
+    });
+    test('If', () {
+      expect(exec('(if true)'), isNull);
+      expect(exec('(if false)'), isNull);
+      expect(exec('(if true 1)'), 1);
+      expect(exec('(if false 1)'), isNull);
+      expect(exec('(if true 1 2)'), 1);
+      expect(exec('(if false 1 2)'), 2);
+    });
+    test('If (lazyness)', () {
+      expect(exec('(if (= 1 1) 3 4)'), 3);
+      expect(exec('(if (= 1 2) 3 4)'), 4);
+    });
+    test('While', () {
+      var env = standard.create();
+      env.define(new Symbol('a'), 0);
+      exec('(while (< a 3) (set! a (+ a 1)))', env);
+      expect(env[new Symbol('a')], 3);
+    });
+    test('True', () {
+      expect(exec('true'), isTrue);
+    });
+    test('False', () {
+      expect(exec('false'), isFalse);
+    });
+    test('And', () {
+      expect(exec('(and)'), isTrue);
+      expect(exec('(and true)'), isTrue);
+      expect(exec('(and false)'), isFalse);
+      expect(exec('(and true true)'), isTrue);
+      expect(exec('(and true false)'), isFalse);
+      expect(exec('(and false true)'), isFalse);
+      expect(exec('(and false false)'), isFalse);
+      expect(exec('(and true true true)'), isTrue);
+      expect(exec('(and true true false)'), isFalse);
+      expect(exec('(and true false true)'), isFalse);
+      expect(exec('(and true false false)'), isFalse);
+      expect(exec('(and false true true)'), isFalse);
+      expect(exec('(and false true false)'), isFalse);
+      expect(exec('(and false false true)'), isFalse);
+      expect(exec('(and false false false)'), isFalse);
+    });
+    test('And (lazyness)', () {
+      var env = standard.create();
+      env.define(new Symbol('a'), null);
+      exec('(and false (set! a true))', env);
+      expect(env[new Symbol('a')], isNull);
+      exec('(and true (set! a true))', env);
+      expect(env[new Symbol('a')], isTrue);
+    });
+    test('Or', () {
+      expect(exec('(or)'), isFalse);
+      expect(exec('(or true)'), isTrue);
+      expect(exec('(or false)'), isFalse);
+      expect(exec('(or true true)'), isTrue);
+      expect(exec('(or true false)'), isTrue);
+      expect(exec('(or false true)'), isTrue);
+      expect(exec('(or false false)'), isFalse);
+      expect(exec('(or true true true)'), isTrue);
+      expect(exec('(or true true false)'), isTrue);
+      expect(exec('(or true false true)'), isTrue);
+      expect(exec('(or true false false)'), isTrue);
+      expect(exec('(or false true true)'), isTrue);
+      expect(exec('(or false true false)'), isTrue);
+      expect(exec('(or false false true)'), isTrue);
+      expect(exec('(or false false false)'), isFalse);
+    });
+    test('Or (lazyness)', () {
+      var env = standard.create();
+      env.define(new Symbol('a'), null);
+      exec('(or true (set! a true))', env);
+      expect(env[new Symbol('a')], isNull);
+      exec('(or false (set! a true))', env);
+      expect(env[new Symbol('a')], isTrue);
+    });
+    test('Not', () {
+      expect(exec('(not true)'), isFalse);
+      expect(exec('(not false)'), isTrue);
+    });
+    test('Add', () {
+      expect(exec('(+ 1)'), 1);
+      expect(exec('(+ 1 2)'), 3);
+      expect(exec('(+ 1 2 3)'), 6);
+      expect(exec('(+ 1 2 3 4)'), 10);
+    });
+    test('Sub', () {
+      expect(exec('(- 1)'), -1);
+      expect(exec('(- 1 2)'), -1);
+      expect(exec('(- 1 2 3)'), -4);
+      expect(exec('(- 1 2 3 4)'), -8);
+    });
+    test('Mul', () {
+      expect(exec('(* 2)'), 2);
+      expect(exec('(* 2 3)'), 6);
+      expect(exec('(* 2 3 4)'), 24);
+    });
+    test('Div', () {
+      expect(exec('(/ 24)'), 24);
+      expect(exec('(/ 24 3)'), 8);
+      expect(exec('(/ 24 3 2)'), 4);
+    });
+    test('Mod', () {
+      expect(exec('(% 24)'), 24);
+      expect(exec('(% 24 5)'), 4);
+      expect(exec('(% 24 5 3)'), 1);
+    });
+    test('Less', () {
+      expect(exec('(< 1 2)'), isTrue);
+      expect(exec('(< 1 1)'), isFalse);
+      expect(exec('(< 2 1)'), isFalse);
+    });
+    test('Less equal', () {
+      expect(exec('(<= 1 2)'), isTrue);
+      expect(exec('(<= 1 1)'), isTrue);
+      expect(exec('(<= 2 1)'), isFalse);
+    });
+    test('Equal', () {
+      expect(exec('(= 1 1)'), isTrue);
+      expect(exec('(= 1 2)'), isFalse);
+      expect(exec('(= 2 1)'), isFalse);
+    });
+    test('Not equal', () {
+      expect(exec('(!= 1 1)'), isFalse);
+      expect(exec('(!= 1 2)'), isTrue);
+      expect(exec('(!= 2 1)'), isTrue);
+    });
+    test('Larger', () {
+      expect(exec('(> 1 1)'), isFalse);
+      expect(exec('(> 1 2)'), isFalse);
+      expect(exec('(> 2 1)'), isTrue);
+    });
+    test('Larger equal', () {
+      expect(exec('(>= 1 1)'), isTrue);
+      expect(exec('(>= 1 2)'), isFalse);
+      expect(exec('(>= 2 1)'), isTrue);
+    });
+    test('Cons', () {
+      expect(exec('(cons 1 2)'), new Cons(1, 2));
+    });
+    test('Car', () {
+      expect(exec('(car null)'), isNull);
+      expect(exec('(car (cons 1 2))'), 1);
+    });
+    test('Car!', () {
+      expect(exec('(car! null 3)'), isNull);
+      expect(exec('(car! (cons 1 2) 3)'), new Cons(3, 2));
+    });
+    test('Cdr', () {
+      expect(exec('(cdr null)'), isNull);
+      expect(exec('(cdr (cons 1 2))'), 2);
+    });
+    test('Cdr!', () {
+      expect(exec('(cdr! null 3)'), isNull);
+      expect(exec('(cdr! (cons 1 2) 3)'), new Cons(1, 3));
+    });
+  });
+  group('Library', () {
+    test('Null', () {
+      expect(exec('null'), isNull);
+    });
+    test('Null? (true)', () {
+      expect(exec('(null? \'())'), isTrue);
+      expect(exec('(null? null)'), isTrue);
+    });
+    test('Null? (false)', () {
+      expect(exec('(null? 1)'), isFalse);
+      expect(exec('(null? "a")'), isFalse);
+      expect(exec('(null? (quote a))'), isFalse);
+      expect(exec('(null? true)'), isFalse);
+      expect(exec('(null? false)'), isFalse);
+    });
+    test('Length', () {
+      expect(exec('(length \'())'), 0);
+      expect(exec('(length \'(1))'), 1);
+      expect(exec('(length \'(1 1))'), 2);
+      expect(exec('(length \'(1 1 1))'), 3);
+      expect(exec('(length \'(1 1 1 1))'), 4);
+      expect(exec('(length \'(1 1 1 1 1))'), 5);
+    });
+    test('Append', () {
+      expect(exec('(append \'() \'())'), isNull);
+      expect(exec('(append \'(1) \'())'), exec('\'(1)'));
+      expect(exec('(append \'() \'(1))'), exec('\'(1)'));
+      expect(exec('(append \'(1) \'(2))'), exec('\'(1 2)'));
+      expect(exec('(append \'(1 2) \'(3))'), exec('\'(1 2 3)'));
+      expect(exec('(append \'(1) \'(2 3))'), exec('\'(1 2 3)'));
+    });
+    test('List Head', () {
+      expect(exec('(list-head \'(5 6 7) 0)'), 5);
+      expect(exec('(list-head \'(5 6 7) 1)'), 6);
+      expect(exec('(list-head \'(5 6 7) 2)'), 7);
+      expect(exec('(list-head \'(5 6 7) 3)'), isNull);
+    });
+    test('List Tail', () {
+      expect(exec('(list-tail \'(5 6 7) 0)'), exec('\'(6 7)'));
+      expect(exec('(list-tail \'(5 6 7) 1)'), exec('\'(7)'));
+      expect(exec('(list-tail \'(5 6 7) 2)'), isNull);
+    });
+    test('Map', () {
+      expect(exec('(map \'() (lambda (x) (* 2 x)))'), isNull);
+      expect(exec('(map \'(2) (lambda (x) (* 2 x)))'), exec('\'(4)'));
+      expect(exec('(map \'(2 3) (lambda (x) (* 2 x)))'), exec('\'(4 6)'));
+      expect(exec('(map \'(2 3 4) (lambda (x) (* 2 x)))'), exec('\'(4 6 8)'));
+    });
+    test('Inject', () {
+      expect(exec('(inject \'() 5 (lambda (s e) (+ s e 1)))'), 5);
+      expect(exec('(inject \'(2) 5 (lambda (s e) (+ s e 1)))'), 8);
+      expect(exec('(inject \'(2 3) 5 (lambda (s e) (+ s e 1)))'), 12);
+    });
+  });
+  group('Examples', () {
+    test('Fibonacci', () {
+      var env = standard.create();
+      exec('(define (fib n)'
+           '  (if (<= n 1)'
+           '    1'
+           '    (+ (fib (- n 1)) (fib (- n 2)))))', env);
+      expect(exec('(fib 0)', env), 1);
+      expect(exec('(fib 1)', env), 1);
+      expect(exec('(fib 2)', env), 2);
+      expect(exec('(fib 3)', env), 3);
+      expect(exec('(fib 4)', env), 5);
+      expect(exec('(fib 5)', env), 8);
+    });
+    test('Closure', () {
+      var env = standard.create();
+      exec('(define (mul n)'
+           '  (lambda (x) (* n x)))', env);
+      expect(exec('((mul 2) 3)', env), 6);
+      expect(exec('((mul 3) 4)', env), 12);
+      expect(exec('((mul 4) 5)', env), 20);
+    });
+    test('Object', () {
+      var env = standard.create();
+      exec('(define (counter start)'
+           '  (let ((count start))'
+           '    (lambda ()'
+           '      (set! count (+ count 1)))))', env);
+      exec('(define a (counter 10))', env);
+      exec('(define b (counter 20))', env);
+      expect(exec('(a)', env), 11);
+      expect(exec('(b)', env), 21);
+      expect(exec('(a)', env), 12);
+      expect(exec('(b)', env), 22);
+      expect(exec('(a)', env), 13);
+      expect(exec('(b)', env), 23);
+    });
+  });
+}
