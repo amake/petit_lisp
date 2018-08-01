@@ -11,8 +11,8 @@
 /// objects.
 library petitparser.example.json;
 
-import 'src/grammar.dart';
-import 'src/parser.dart';
+import 'src/json/grammar.dart';
+import 'src/json/parser.dart';
 
-export 'src/grammar.dart';
-export 'src/parser.dart';
+export 'src/json/grammar.dart';
+export 'src/json/parser.dart';

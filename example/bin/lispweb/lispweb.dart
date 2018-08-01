@@ -2,7 +2,7 @@ library petitparser.example.lispweb;
 
 import 'dart:html';
 
-import '../lisp/lisp.dart';
+import 'package:example/lisp.dart';
 
 void inspect(Element element, Environment environment) {
   var buffer = StringBuffer();
