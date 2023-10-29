@@ -1,5 +1,5 @@
+import 'package:petit_lisp/lisp.dart';
 import 'package:petitparser/reflection.dart';
-import 'package:petitparser_examples/lisp.dart';
 import 'package:test/test.dart';
 
 const Matcher isName = TypeMatcher<Name>();

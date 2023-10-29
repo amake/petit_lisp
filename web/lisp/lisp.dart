@@ -1,6 +1,6 @@
 import 'dart:html';
 
-import 'package:petitparser_examples/lisp.dart';
+import 'package:petit_lisp/lisp.dart';
 
 final input = querySelector('#input') as TextAreaElement;
 final output = querySelector('#output') as ParagraphElement;

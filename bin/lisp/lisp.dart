@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:petit_lisp/lisp.dart';
 import 'package:petitparser/petitparser.dart';
-import 'package:petitparser_examples/lisp.dart';
 
 /// Read, evaluate, print loop.
 void evalInteractive(Parser parser, Environment env, Stream<String> input,

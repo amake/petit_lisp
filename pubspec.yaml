@@ -1,16 +1,11 @@
-name: petitparser_examples
+name: petit_lisp
 version: 6.0.1
 
-homepage: https://petitparser.github.io
-repository: https://github.com/petitparser/dart-petitparser-examples
-description: A collection of example parsers, applications, and benchmarks that
-  illustrate the PetitParser framework.
+homepage: https://github.com/amake/petit_lisp
+repository: https://github.com/amake/petit_lisp.git
+description: A simple Lisp implementation
 topics:
-  - grammar
-  - parser
-  - parser-combinator
-  - parsing
-  - peg
+  - lisp
 
 environment:
   sdk: ^3.0.0
