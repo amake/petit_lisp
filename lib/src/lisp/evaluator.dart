@@ -7,6 +7,7 @@ import 'quote.dart';
 
 /// The evaluation function.
 dynamic eval(Environment env, dynamic expr) {
+  env.checkInterrupt();
   if (expr is Quote) {
     return expr.datum;
   } else if (expr is Cons) {

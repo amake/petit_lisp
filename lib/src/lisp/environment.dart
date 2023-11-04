@@ -1,5 +1,7 @@
 import 'name.dart';
 
+typedef InterruptCallback = void Function();
+
 /// Environment of bindings.
 class Environment {
   /// Constructor for the nested environment.
@@ -7,6 +9,10 @@ class Environment {
 
   /// The owning environment.
   final Environment? _owner;
+
+  /// A callback to check if execution should continue. Consumers should set
+  /// this to a function that throws an exception if execution should stop.
+  InterruptCallback? interrupt;
 
   /// The internal environment bindings.
   final Map<Name, dynamic> _bindings;
@@ -45,6 +51,15 @@ class Environment {
 
   /// Returns the parent of the bindings.
   Environment? get owner => _owner;
+
+  /// Check if execution should continue. See [interrupt].
+  void checkInterrupt() {
+    Environment? env = this;
+    while (env != null) {
+      env.interrupt?.call();
+      env = env.owner;
+    }
+  }
 
   /// Called when a missing binding is accessed.
   void _invalidBinding(Name key) =>

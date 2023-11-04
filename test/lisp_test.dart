@@ -626,5 +626,14 @@ void main() {
       expect(exec('(a)', env), 13);
       expect(exec('(b)', env), 23);
     });
+    test('Exit infinite loop', () {
+      final start = DateTime.timestamp().millisecondsSinceEpoch;
+      final env = standard.create()
+        ..interrupt = () {
+          final end = DateTime.timestamp().millisecondsSinceEpoch;
+          if (end - start > 200) throw StateError('interrupted');
+        };
+      expect(() => exec('(while true)', env), throwsStateError);
+    });
   });
 }
