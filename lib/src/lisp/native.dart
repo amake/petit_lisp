@@ -63,7 +63,21 @@ class NativeEnvironment extends Environment {
         final inner = lambdaEnv.create();
         var names = lambdaArgs.head;
         var values = evalArguments(evalEnv, evalArgs);
-        while (names != null && values != null) {
+        var optional = false;
+        while (names != null) {
+          if (!optional && names.head == Name('&optional')) {
+            optional = true;
+            names = names.tail;
+            continue;
+          }
+          if (optional && names.head == Name('&optional')) {
+            throw ArgumentError('Invalid lambda: $lambdaArgs');
+          }
+          if (optional && values == null) {
+            inner.define(names.head, null);
+            names = names.tail;
+            continue;
+          }
           inner.define(names.head, values.head);
           names = names.tail;
           values = values.tail;
