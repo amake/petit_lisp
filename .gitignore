@@ -4,5 +4,5 @@
 .idea/
 .packages
 .pub/
-petitparser_examples/build
+build
 pubspec.lock
