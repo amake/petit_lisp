@@ -359,6 +359,13 @@ void main() {
       expect(exec('(if true 1 2)'), 1);
       expect(exec('(if false 1 2)'), 2);
     });
+    test('If (truthiness)', () {
+      expect(exec('(if (and 1) 3 4)'), 3);
+      expect(exec('(if (and 1 false) 3 4)'), 4);
+      expect(exec('(if (or 1) 3 4)'), 3);
+      expect(exec('(if (or 1 false) 3 4)'), 3);
+      expect(exec('(if (or false) 3 4)'), 4);
+    });
     test('If (laziness)', () {
       expect(exec('(if (= 1 1) 3 4)'), 3);
       expect(exec('(if (= 1 2) 3 4)'), 4);
@@ -368,6 +375,15 @@ void main() {
       env.define(Name('a'), 0);
       exec('(while (< a 3) (set! a (+ a 1)))', env);
       expect(env[Name('a')], 3);
+    });
+    test('While (truthiness)', () {
+      final env = standard.create();
+      env.define(
+        Name('a'),
+        Cons(Name('foo'), Cons(Name('bar'), Cons(Name('baz')))),
+      );
+      exec('(while (cdr a) (set! a (cdr a)))', env);
+      expect(env[Name('a')], Cons(Name('baz')));
     });
     test('True', () {
       expect(exec('true'), isTrue);
@@ -391,6 +407,15 @@ void main() {
       expect(exec('(and false true false)'), isFalse);
       expect(exec('(and false false true)'), isFalse);
       expect(exec('(and false false false)'), isFalse);
+    });
+    test('And (truthiness)', () {
+      expect(exec('(and 1)'), 1);
+      expect(exec('(and 1 false)'), isFalse);
+      expect(exec('(and "foo")'), "foo");
+      expect(exec("(and '(a))"), Cons(Name('a')));
+      expect(exec("(and '())"), isFalse);
+      expect(exec('(and 1 2 3)'), 3);
+      expect(exec('(and false 2 3)'), isFalse);
     });
     test('And (laziness)', () {
       final env = standard.create();
@@ -417,6 +442,16 @@ void main() {
       expect(exec('(or false false true)'), isTrue);
       expect(exec('(or false false false)'), isFalse);
     });
+    test('Or (truthiness)', () {
+      expect(exec('(or 1)'), 1);
+      expect(exec('(or 1 false)'), 1);
+      expect(exec('(or false 1)'), 1);
+      expect(exec('(or "foo")'), "foo");
+      expect(exec("(or '(a))"), Cons(Name('a')));
+      expect(exec("(or '())"), isFalse);
+      expect(exec('(or 1 2 3)'), 1);
+      expect(exec('(or false 2 3)'), 2);
+    });
     test('Or (laziness)', () {
       final env = standard.create();
       env.define(Name('a'), null);
@@ -428,6 +463,12 @@ void main() {
     test('Not', () {
       expect(exec('(not true)'), isFalse);
       expect(exec('(not false)'), isTrue);
+    });
+    test('Not (truthy)', () {
+      expect(exec('(not 1)'), isFalse);
+      expect(exec('(not "foo")'), isFalse);
+      expect(exec("(not '(a))"), isFalse);
+      expect(exec("(not '())"), isTrue);
     });
     test('Add', () {
       expect(exec('(+ 1)'), 1);

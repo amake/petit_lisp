@@ -125,7 +125,7 @@ class NativeEnvironment extends Environment {
 
   static dynamic _if(Environment env, dynamic args) {
     final condition = eval(env, args.head);
-    if (condition) {
+    if (truthy(condition)) {
       if (args.tail != null) {
         return eval(env, args.tail.head);
       }
@@ -139,33 +139,37 @@ class NativeEnvironment extends Environment {
 
   static dynamic _while(Environment env, dynamic args) {
     dynamic result;
-    while (eval(env, args.head)) {
+    while (truthy(eval(env, args.head))) {
       result = evalList(env, args.tail);
     }
     return result;
   }
 
   static dynamic _and(Environment env, dynamic args) {
+    dynamic arg = true;
     while (args != null) {
-      if (!eval(env, args.head)) {
+      arg = eval(env, args.head);
+      if (!truthy(arg)) {
         return false;
       }
       args = args.tail;
     }
-    return true;
+    return arg;
   }
 
   static dynamic _or(Environment env, dynamic args) {
     while (args != null) {
-      if (eval(env, args.head)) {
-        return true;
+      final arg = eval(env, args.head);
+      if (truthy(arg)) {
+        return arg;
       }
       args = args.tail;
     }
     return false;
   }
 
-  static dynamic _not(Environment env, dynamic args) => !eval(env, args.head);
+  static dynamic _not(Environment env, dynamic args) =>
+      !truthy(eval(env, args.head));
 
   static dynamic _plus(Environment env, dynamic args) {
     num value = eval(env, args.head);

@@ -47,3 +47,6 @@ dynamic evalString(Parser parser, Environment env, String script) {
   }
   return result;
 }
+
+/// Converts a lisp value to a Dart boolean.
+bool truthy(dynamic arg) => arg != false && arg != null;
