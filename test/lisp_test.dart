@@ -281,6 +281,8 @@ void main() {
       expect(exec('((lambda (x) (+ x x)) 2)'), 4);
       expect(exec('((lambda (x y) (+ x y)) 2 4)'), 6);
       expect(exec('((lambda (x y z) (+ x y z)) 2 4 6)'), 12);
+    });
+    test('Lambda (&optional)', () {
       expect(exec('((lambda (x y &optional z) (+ x y)) 2 4)'), 6);
       expect(exec('((lambda (x y &optional z) (+ x y z)) 2 4 6)'), 12);
       expect(exec('((lambda (x y &optional z) z) 2 4)'), null);
