@@ -42,8 +42,8 @@ class LispGrammarDefinition extends GrammarDefinition {
       pattern('a-zA-Z0-9!#\$%&*/:<=>?@\\^_|~+-').star();
 
   Parser quote() => char("'") & ref0(atom);
-  Parser quasiquote() => char('`') & ref0(list);
-  Parser unquote() => char(',') & ref0(list);
+  Parser quasiquote() => char('`') & ref0(atom);
+  Parser unquote() => char(',') & ref0(atom);
   Parser splice() => char('@') & ref0(list);
 
   Parser space() => whitespace() | ref0(comment);

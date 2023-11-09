@@ -177,6 +177,67 @@ void main() {
         ]
       ]);
     });
+    test('Quote', () {
+      expect(grammar.parse("'a").value, [
+        ["'", 'a']
+      ]);
+      expect(grammar.parse("'1").value, [
+        ["'", '1']
+      ]);
+      expect(grammar.parse(''''"foo"''').value, [
+        [
+          "'",
+          [
+            '"',
+            ['f', 'o', 'o'],
+            '"'
+          ]
+        ]
+      ]);
+      expect(grammar.parse("'()").value, [
+        [
+          "'",
+          ['(', [], ')']
+        ]
+      ]);
+    });
+    test('Quasiquote', () {
+      expect(grammar.parse('`a').value, [
+        ['`', 'a']
+      ]);
+      expect(grammar.parse('`1').value, [
+        ['`', '1']
+      ]);
+      expect(grammar.parse('`"foo"').value, [
+        [
+          '`',
+          [
+            '"',
+            ['f', 'o', 'o'],
+            '"'
+          ]
+        ]
+      ]);
+      expect(grammar.parse('`()').value, [
+        [
+          '`',
+          ['(', [], ')']
+        ]
+      ]);
+      expect(grammar.parse('`(,1)').value, [
+        [
+          '`',
+          [
+            '(',
+            [
+              [',', '1'],
+              []
+            ],
+            ')'
+          ]
+        ]
+      ]);
+    });
   });
   group('Parser', () {
     final atom = parserDefinition.buildFrom(parserDefinition.atom());
