@@ -16,6 +16,7 @@ class NativeEnvironment extends Environment {
     define(Name('set!'), _set);
     define(Name('print'), _print);
     define(Name('progn'), _progn);
+    define(Name('macro'), _macro);
 
     // control structures
     define(Name('if'), _if);
@@ -59,11 +60,16 @@ class NativeEnvironment extends Environment {
     throw ArgumentError('Invalid define: $args');
   }
 
-  static Lambda _lambda(Environment lambdaEnv, dynamic lambdaArgs) =>
+  static Lambda _lambda(
+    Environment lambdaEnv,
+    dynamic lambdaArgs, {
+    bool shouldEvalArgs = true,
+  }) =>
       (evalEnv, evalArgs) {
         final inner = lambdaEnv.create();
         var names = lambdaArgs.head;
-        var values = evalArguments(evalEnv, evalArgs);
+        var values =
+            shouldEvalArgs ? evalArguments(evalEnv, evalArgs) : evalArgs;
         var optional = false;
         while (names != null) {
           if (!optional && names.head == Name('&optional')) {
@@ -93,6 +99,24 @@ class NativeEnvironment extends Environment {
         }
         return evalList(inner, lambdaArgs.tail);
       };
+
+  static dynamic _macro(Environment env, dynamic args) {
+    if (args.head is Cons) {
+      final Cons head = args.head;
+      if (head.head is Name) {
+        return env.define(
+          head.head,
+          _macroImpl(env, Cons(head.tail, args.tail)),
+        );
+      }
+    }
+    throw ArgumentError('Invalid macro: $args');
+  }
+
+  static Lambda _macroImpl(Environment lambdaEnv, dynamic lambdaArgs) {
+    final generator = _lambda(lambdaEnv, lambdaArgs, shouldEvalArgs: false);
+    return (evalEnv, evalArgs) => eval(evalEnv, generator(evalEnv, evalArgs));
+  }
 
   static dynamic _quote(Environment env, dynamic args) => args.head;
 

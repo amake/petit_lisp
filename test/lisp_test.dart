@@ -304,6 +304,17 @@ void main() {
         throwsArgumentError,
       );
     });
+    test('Macro', () {
+      final env = standard.create();
+      env.define(Name('x'), 0);
+      exec(
+          '(macro (inc var)'
+          "  (cons 'set! (cons var (cons (cons '+ (cons 1 (cons var '()))) '()))))"
+          '(inc x)'
+          '(inc x)',
+          env);
+      expect(env[Name('x')], 2);
+    });
     test('Quote', () {
       expect(exec('(quote 1)'), 1);
       expect(exec('(quote a)'), Name('a'));
@@ -689,6 +700,18 @@ void main() {
       expect(exec('(b)', env), 22);
       expect(exec('(a)', env), 13);
       expect(exec('(b)', env), 23);
+    });
+    test('Macro (advanced)', () {
+      final env = standard.create()
+        ..define(Name('x'), null)
+        ..define(Name('y'), null);
+      exec(
+          '(macro (set2! a b val)'
+          "  (list 'progn (list 'set! a val) (list 'set! b val)))"
+          '(set2! x y 1)',
+          env);
+      expect(env[Name('x')], 1);
+      expect(env[Name('y')], 1);
     });
     test('Exit infinite loop', () {
       final start = DateTime.timestamp().millisecondsSinceEpoch;
