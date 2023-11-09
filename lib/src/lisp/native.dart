@@ -15,6 +15,7 @@ class NativeEnvironment extends Environment {
     define(Name('let'), _let);
     define(Name('set!'), _set);
     define(Name('print'), _print);
+    define(Name('progn'), _progn);
 
     // control structures
     define(Name('if'), _if);
@@ -129,6 +130,15 @@ class NativeEnvironment extends Environment {
     }
     printer(buffer.toString());
     return null;
+  }
+
+  static dynamic _progn(Environment env, dynamic args) {
+    dynamic result;
+    while (args != null) {
+      result = eval(env, args.head);
+      args = args.tail;
+    }
+    return result;
   }
 
   static dynamic _if(Environment env, dynamic args) {

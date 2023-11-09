@@ -329,6 +329,13 @@ void main() {
       expect(exec('(let ((a 1) (b 2)) (+ a b))'), 3);
       expect(exec('(let ((a 1) (b 2)) (+ a b) 4)'), 4);
     });
+    test('Progn', () {
+      final env = standard.create();
+      env.define(Name('x'), 0);
+      expect(exec('(progn 1 2)'), 2);
+      expect(exec('(progn 1 (+ 1 1))'), 2);
+      expect(exec('(progn (set! x (+ x 1)) (set! x (+ x 1)) x)', env), 2);
+    });
     group('Print', () {
       final buffer = StringBuffer();
       setUp(() {
