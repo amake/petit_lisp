@@ -78,6 +78,14 @@ class NativeEnvironment extends Environment {
             names = names.tail;
             continue;
           }
+          if (names.head == Name('&rest')) {
+            final restArg = names.tail?.head;
+            if (restArg is! Name) {
+              throw ArgumentError('Invalid lambda: $lambdaArgs');
+            }
+            inner.define(restArg, values);
+            break;
+          }
           inner.define(names.head, values.head);
           names = names.tail;
           values = values.tail;

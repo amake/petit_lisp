@@ -295,6 +295,15 @@ void main() {
         throwsArgumentError,
       );
     });
+    test('Lambda (&rest)', () {
+      expect(exec('((lambda (x y &rest args) (length args)) 2 4)'), 0);
+      expect(exec('((lambda (x y &rest args) (length args)) 2 4 6)'), 1);
+      expect(exec('((lambda (x y &rest args) (length args)) 2 4 6 8)'), 2);
+      expect(
+        () => exec('((lambda (x y &rest) (+ x y)) 2 4)'),
+        throwsArgumentError,
+      );
+    });
     test('Quote', () {
       expect(exec('(quote 1)'), 1);
       expect(exec('(quote a)'), Name('a'));
