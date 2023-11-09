@@ -612,6 +612,11 @@ void main() {
       expect(exec("(append '(1 2) '(3))"), exec("'(1 2 3)"));
       expect(exec("(append '(1) '(2 3))"), exec("'(1 2 3)"));
     });
+    test('List', () {
+      expect(exec('(list)'), isNull);
+      expect(exec('(list 1 (+ 1 1))'), Cons(1, Cons(2)));
+      expect(exec('(list 1 (+ 1 1) "foo")'), Cons(1, Cons(2, Cons('foo'))));
+    });
     test('List Head', () {
       expect(exec("(list-head '(5 6 7) 0)"), 5);
       expect(exec("(list-head '(5 6 7) 1)"), 6);

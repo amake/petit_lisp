@@ -20,6 +20,8 @@ class StandardEnvironment extends Environment {
 (define false (or))
 
 ; list functions
+(define (list &rest args) args)
+
 (define (length list)
   (if (null? list)
       0
