@@ -1,4 +1,7 @@
 import 'package:petit_lisp/lisp.dart';
+import 'package:petit_lisp/src/lisp/quasiquote.dart';
+import 'package:petit_lisp/src/lisp/quote.dart';
+import 'package:petit_lisp/src/lisp/unquote.dart';
 import 'package:petitparser/reflection.dart';
 import 'package:test/test.dart';
 
@@ -384,8 +387,30 @@ void main() {
     test('Quote (syntax)', () {
       expect(exec("'()"), null);
       expect(exec("'a"), Name('a'));
+      expect(exec("'`a"), Quasiquote(Name('a')));
       expect(exec("'(1)"), Cons(1));
       expect(exec("'(+ 1)"), Cons(Name('+'), Cons(1)));
+      expect(
+          exec("'(a `(b ,c))"),
+          Cons(Name('a'),
+              Cons(Quasiquote(Cons(Name('b'), Cons(Unquote(Name('c'))))))));
+    });
+    test('Quasiquote', () {
+      expect(exec('`()'), isNull);
+      expect(exec('`a'), Name('a'));
+      expect(exec("`'a"), Quote(Name('a')));
+      expect(exec('`(1)'), Cons(1));
+      expect(exec('`(+ 1)'), Cons(Name('+'), Cons(1)));
+      expect(exec('`(,(+ 1 1))'), Cons(2));
+      expect(
+        exec('`((+ 1 ,(+ 1 1)))'),
+        Cons(Cons(Name('+'), Cons(1, Cons(2)))),
+      );
+      expect(exec("`('(,(+ 1 1)))"), Cons(Quote(Cons(2))));
+      expect(
+        exec("`(`(,(+ 1 1)))"),
+        Cons(Quasiquote(Cons(Unquote(Cons(Name('+'), Cons(1, Cons(1))))))),
+      );
     });
     test('Eval', () {
       expect(exec('(eval (quote (+ 1 2)))'), 3);

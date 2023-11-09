@@ -3,7 +3,9 @@ import 'package:petitparser/petitparser.dart';
 import 'cons.dart';
 import 'grammar.dart';
 import 'name.dart';
+import 'quasiquote.dart';
 import 'quote.dart';
+import 'unquote.dart';
 
 /// The standard lisp parser definition.
 final _definition = LispParserDefinition();
@@ -42,4 +44,10 @@ class LispParserDefinition extends LispGrammarDefinition {
 
   @override
   Parser quote() => super.quote().map((each) => Quote(each[1]));
+
+  @override
+  Parser quasiquote() => super.quasiquote().map((each) => Quasiquote(each[1]));
+
+  @override
+  Parser unquote() => super.unquote().map((each) => Unquote(each[1]));
 }

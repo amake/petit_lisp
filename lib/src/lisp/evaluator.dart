@@ -3,13 +3,17 @@ import 'package:petitparser/petitparser.dart';
 import 'cons.dart';
 import 'environment.dart';
 import 'name.dart';
+import 'quasiquote.dart';
 import 'quote.dart';
+import 'unquote.dart';
 
 /// The evaluation function.
 dynamic eval(Environment env, dynamic expr) {
   env.checkInterrupt();
   if (expr is Quote) {
     return expr.datum;
+  } else if (expr is Quasiquote) {
+    return unquasiquote(env, expr.datum);
   } else if (expr is Cons) {
     final Function function = eval(env, expr.head);
     return function(env, expr.tail);
@@ -50,3 +54,15 @@ dynamic evalString(Parser parser, Environment env, String script) {
 
 /// Converts a lisp value to a Dart boolean.
 bool truthy(dynamic arg) => arg != false && arg != null;
+
+dynamic unquasiquote(Environment env, dynamic expr) {
+  if (expr is Cons) {
+    return Cons(unquasiquote(env, expr.head), unquasiquote(env, expr.tail));
+  } else if (expr is Quote) {
+    return Quote(unquasiquote(env, expr.datum));
+  } else if (expr is Unquote) {
+    return eval(env, expr.datum);
+  } else {
+    return expr;
+  }
+}
