@@ -412,6 +412,21 @@ void main() {
         Cons(Quasiquote(Cons(Unquote(Cons(Name('+'), Cons(1, Cons(1))))))),
       );
     });
+    test('Splice', () {
+      expect(exec('`,@1'), 1);
+      expect(exec("`(,@())"), isNull);
+      expect(exec("`(,@'(1))"), Cons(1));
+      expect(exec("`(1 ,@'(2) 3)"), Cons(1, Cons(2, Cons(3))));
+      expect(exec("`(1 ,@'(2 3) 4)"), Cons(1, Cons(2, Cons(3, Cons(4)))));
+      expect(
+        exec("`(',@())"),
+        Cons(Quote(null)), // guile: error; sbcl: ((QUOTE))
+      );
+      expect(
+        exec("`(',@'(1))"),
+        Cons(Quote(Cons(1))), // guile: ((quote 1)) sbcl: ('1)
+      );
+    });
     test('Eval', () {
       expect(exec('(eval (quote (+ 1 2)))'), 3);
     });

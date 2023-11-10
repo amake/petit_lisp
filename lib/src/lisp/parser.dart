@@ -5,6 +5,7 @@ import 'grammar.dart';
 import 'name.dart';
 import 'quasiquote.dart';
 import 'quote.dart';
+import 'splice.dart';
 import 'unquote.dart';
 
 /// The standard lisp parser definition.
@@ -25,8 +26,8 @@ class LispParserDefinition extends LispGrammarDefinition {
   Parser empty() => super.empty().map((each) => null);
 
   @override
-  Parser string() =>
-      super.string().map((each) => String.fromCharCodes(each[1].cast<int>()));
+  Parser lstring() =>
+      super.lstring().map((each) => String.fromCharCodes(each[1].cast<int>()));
 
   @override
   Parser characterEscape() =>
@@ -50,4 +51,7 @@ class LispParserDefinition extends LispGrammarDefinition {
 
   @override
   Parser unquote() => super.unquote().map((each) => Unquote(each[1]));
+
+  @override
+  Parser splice() => super.splice().map((each) => Splice(each[1]));
 }

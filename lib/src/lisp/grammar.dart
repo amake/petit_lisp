@@ -9,12 +9,12 @@ class LispGrammarDefinition extends GrammarDefinition {
   Parser atomChoice() =>
       ref0(list) |
       ref0(number) |
-      ref0(string) |
+      ref0(lstring) |
       ref0(symbol) |
       ref0(quote) |
       ref0(quasiquote) |
-      ref0(unquote) |
-      ref0(splice);
+      ref0(splice) |
+      ref0(unquote);
 
   Parser list() =>
       ref2(bracket, '()', ref0(cells)) |
@@ -31,7 +31,7 @@ class LispGrammarDefinition extends GrammarDefinition {
       char('.').seq(digit().plus()).optional() &
       anyOf('eE').seq(anyOf('-+').optional()).seq(digit().plus()).optional();
 
-  Parser string() => ref2(bracket, '""', ref0(character).star());
+  Parser lstring() => ref2(bracket, '""', ref0(character).star());
   Parser character() => ref0(characterEscape) | ref0(characterRaw);
   Parser characterEscape() => char('\\') & any();
   Parser characterRaw() => pattern('^"');
@@ -44,7 +44,7 @@ class LispGrammarDefinition extends GrammarDefinition {
   Parser quote() => char("'") & ref0(atom);
   Parser quasiquote() => char('`') & ref0(atom);
   Parser unquote() => char(',') & ref0(atom);
-  Parser splice() => char('@') & ref0(list);
+  Parser splice() => string(',@') & ref0(atom);
 
   Parser space() => whitespace() | ref0(comment);
   Parser comment() => char(';') & Token.newlineParser().neg().star();
