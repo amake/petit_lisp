@@ -16,6 +16,9 @@ class LispParserDefinition extends LispGrammarDefinition {
   Parser list() => super.list().map((each) => each[1]);
 
   @override
+  Parser cons() => super.cons().map((each) => Cons(each[0], each[2]));
+
+  @override
   Parser cell() => super.cell().map((each) => Cons(each[0], each[1]));
 
   @override

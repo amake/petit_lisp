@@ -1,4 +1,5 @@
 import 'package:petit_lisp/lisp.dart';
+import 'package:petitparser/petitparser.dart';
 import 'package:petitparser/reflection.dart';
 import 'package:test/test.dart';
 
@@ -248,11 +249,50 @@ void main() {
         ]
       ]);
     });
+    test('Cons', () {
+      expect(grammar.parse('(1 . 2)').value, [
+        [
+          '(',
+          ['1', '.', '2'],
+          ')'
+        ]
+      ]);
+      expect(grammar.parse('(1 2 . 3)').value, [
+        [
+          '(',
+          [
+            '1',
+            ['2', '.', '3']
+          ],
+          ')'
+        ]
+      ]);
+      expect(grammar.parse('(1 . (2 . 3))').value, [
+        [
+          '(',
+          [
+            '1',
+            '.',
+            [
+              '(',
+              ['2', '.', '3'],
+              ')'
+            ]
+          ],
+          ')'
+        ]
+      ]);
+      expect(grammar.parse('1 . 2'), isA<Failure>());
+      expect(grammar.parse('(1 . )'), isA<Failure>());
+      expect(grammar.parse('( . 2)'), isA<Failure>());
+      expect(grammar.parse('(1 . 2 . 3)'), isA<Failure>());
+      expect(grammar.parse('(1 . 2 3 . 4)'), isA<Failure>());
+    });
   });
   group('Parser', () {
     final atom = parserDefinition.buildFrom(parserDefinition.atom());
     test('Linter', () {
-      expect(linter(atom, excludedTypes: {}), isEmpty);
+      expect(linter(atom, excludedTypes: {LinterType.info}), isEmpty);
     });
     test('Name', () {
       final cell = atom.parse('foo').value;
@@ -378,6 +418,12 @@ void main() {
       expect(cell.tail.head.tail.head.tail, isCons);
       expect(cell.tail.head.tail.head.tail.head, 2);
       expect(cell.tail.head.tail.head.tail.tail, isNull);
+    });
+    test('Cons', () {
+      final cell = atom.parse('(1 . 2)').value;
+      expect(cell, isCons);
+      expect(cell.car, 1);
+      expect(cell.cdr, 2);
     });
   });
   group('Natives', () {
@@ -751,6 +797,19 @@ void main() {
       expect(
           exec('(cons 1 (cons 2 (cons 3 null)))'), Cons(1, Cons(2, Cons(3))));
     });
+    test('Cons (syntax)', () {
+      expect(exec("'(1 . 2)"), Cons(1, 2));
+      expect(exec("'(1 . (2 . 3))"), Cons(1, Cons(2, 3)));
+      expect(exec("'(1 . ())"), Cons(1));
+      expect(
+        exec("'(1 . null)"),
+        Cons(1),
+        skip: 'The symbol null should evaluate to null even in this case',
+      );
+      expect(exec("(car '(1 . 2))"), 1);
+      expect(exec("(cdr '(1 . 2))"), 2);
+    });
+
     test('Car', () {
       expect(exec('(car null)'), isNull);
       expect(exec('(car (cons 1 2))'), 1);

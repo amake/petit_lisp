@@ -20,7 +20,8 @@ class LispGrammarDefinition extends GrammarDefinition {
       ref2(bracket, '()', ref0(cells)) |
       ref2(bracket, '[]', ref0(cells)) |
       ref2(bracket, '{}', ref0(cells));
-  Parser cells() => ref0(cell) | ref0(empty);
+  Parser cells() => ref0(cons) | ref0(cell) | ref0(empty);
+  Parser cons() => ref0(atom) & char('.') & ref0(atom);
   Parser cell() => ref0(atom) & ref0(cells);
   Parser empty() => ref0(space).star();
 
