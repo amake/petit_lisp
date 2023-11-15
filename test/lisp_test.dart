@@ -425,6 +425,10 @@ void main() {
       expect(cell.car, 1);
       expect(cell.cdr, 2);
     });
+    test('Null', () {
+      final cell = atom.parse('null').value;
+      expect(cell, isNull);
+    });
   });
   group('Natives', () {
     test('Define', () {
@@ -480,9 +484,11 @@ void main() {
       expect(exec('(quote 1)'), 1);
       expect(exec('(quote a)'), Name('a'));
       expect(exec('(quote (+ 1))'), Cons(Name('+'), Cons(1)));
+      expect(exec('(quote null)'), isNull);
     });
     test('Quote (syntax)', () {
       expect(exec("'()"), null);
+      expect(exec("'null"), isNull);
       expect(exec("'a"), Name('a'));
       expect(exec("'`a"), Cons.quasiquote(Name('a')));
       expect(exec("'(1)"), Cons(1));
@@ -499,6 +505,8 @@ void main() {
     });
     test('Quasiquote', () {
       expect(exec('`()'), isNull);
+      expect(exec('`null'), isNull);
+      expect(exec('`,null'), isNull);
       expect(exec('`a'), Name('a'));
       expect(exec("`'a"), Cons.quote(Name('a')));
       expect(exec('`(1)'), Cons(1));
@@ -523,6 +531,7 @@ void main() {
       expect(exec('`(,@1)'), 1);
       expect(() => exec('`(,@1 2)'), throwsArgumentError);
       expect(exec("`(,@())"), isNull);
+      expect(exec("`(,@null)"), isNull);
       expect(exec("`(,@'(1))"), Cons(1));
       expect(exec("`(1 ,@2)"), Cons(1, 2));
       expect(exec("`(1 ,@'(2) 3)"), Cons(1, Cons(2, Cons(3))));
@@ -801,11 +810,7 @@ void main() {
       expect(exec("'(1 . 2)"), Cons(1, 2));
       expect(exec("'(1 . (2 . 3))"), Cons(1, Cons(2, 3)));
       expect(exec("'(1 . ())"), Cons(1));
-      expect(
-        exec("'(1 . null)"),
-        Cons(1),
-        skip: 'The symbol null should evaluate to null even in this case',
-      );
+      expect(exec("'(1 . null)"), Cons(1));
       expect(exec("(car '(1 . 2))"), 1);
       expect(exec("(cdr '(1 . 2))"), 2);
     });

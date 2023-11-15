@@ -37,7 +37,8 @@ class LispParserDefinition extends LispGrammarDefinition {
       super.characterRaw().map((each) => each.codeUnitAt(0));
 
   @override
-  Parser symbol() => super.symbol().map((each) => Name(each));
+  Parser symbol() =>
+      super.symbol().map((each) => each == 'null' ? null : Name(each));
 
   @override
   Parser number() => super.number().map((each) => num.parse(each));
