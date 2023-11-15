@@ -1,7 +1,4 @@
 import 'package:petit_lisp/lisp.dart';
-import 'package:petit_lisp/src/lisp/quasiquote.dart';
-import 'package:petit_lisp/src/lisp/quote.dart';
-import 'package:petit_lisp/src/lisp/unquote.dart';
 import 'package:petitparser/reflection.dart';
 import 'package:test/test.dart';
 
@@ -49,6 +46,16 @@ void main() {
       expect(cell == cell, isTrue);
       expect(cell.hashCode, isNonZero);
       expect(cell.toString(), '(3 4 . 5)');
+    });
+    test('Cons (special forms)', () {
+      expect(Cons.quote(1), Cons(Name('quote'), Cons(1)));
+      expect(Cons.quasiquote(1), Cons(Name('quasiquote'), Cons(1)));
+      expect(Cons.unquote(1), Cons(Name('unquote'), Cons(1)));
+      expect(Cons.unquoteSplicing(1), Cons(Name('unquote-splicing'), Cons(1)));
+      expect(Cons.quote(1).toString(), "'1");
+      expect(Cons.quasiquote(1).toString(), '`1');
+      expect(Cons.unquote(1).toString(), ',1');
+      expect(Cons.unquoteSplicing(1).toString(), ',@1');
     });
   });
   group('Environment', () {
@@ -328,6 +335,50 @@ void main() {
       expect(cell.tail.tail.head, 2);
       expect(cell.tail.tail.tail, isNull);
     });
+    test('Quote', () {
+      final cell = atom.parse("'(1 2)").value;
+      expect(cell, isCons);
+      expect(cell.head, isName);
+      expect(cell.head.toString(), 'quote');
+      expect(cell.tail, isCons);
+      expect(cell.tail.head, isCons);
+      expect(cell.tail.head.head, 1);
+      expect(cell.tail.head.tail, isCons);
+      expect(cell.tail.head.tail.head, 2);
+      expect(cell.tail.head.tail.tail, isNull);
+    });
+    test('Quasiquote', () {
+      final cell = atom.parse('`(1 ,2)').value;
+      expect(cell, isCons);
+      expect(cell.head, isName);
+      expect(cell.head.toString(), 'quasiquote');
+      expect(cell.tail, isCons);
+      expect(cell.tail.head, isCons);
+      expect(cell.tail.head.head, 1);
+      expect(cell.tail.head.tail, isCons);
+      expect(cell.tail.head.tail.head, isCons);
+      expect(cell.tail.head.tail.head.head, isName);
+      expect(cell.tail.head.tail.head.head.toString(), 'unquote');
+      expect(cell.tail.head.tail.head.tail, isCons);
+      expect(cell.tail.head.tail.head.tail.head, 2);
+      expect(cell.tail.head.tail.head.tail.tail, isNull);
+    });
+    test('Splice', () {
+      final cell = atom.parse('`(1 ,@2)').value;
+      expect(cell, isCons);
+      expect(cell.head, isName);
+      expect(cell.head.toString(), 'quasiquote');
+      expect(cell.tail, isCons);
+      expect(cell.tail.head, isCons);
+      expect(cell.tail.head.head, 1);
+      expect(cell.tail.head.tail, isCons);
+      expect(cell.tail.head.tail.head, isCons);
+      expect(cell.tail.head.tail.head.head, isName);
+      expect(cell.tail.head.tail.head.head.toString(), 'unquote-splicing');
+      expect(cell.tail.head.tail.head.tail, isCons);
+      expect(cell.tail.head.tail.head.tail.head, 2);
+      expect(cell.tail.head.tail.head.tail.tail, isNull);
+    });
   });
   group('Natives', () {
     test('Define', () {
@@ -387,18 +438,23 @@ void main() {
     test('Quote (syntax)', () {
       expect(exec("'()"), null);
       expect(exec("'a"), Name('a'));
-      expect(exec("'`a"), Quasiquote(Name('a')));
+      expect(exec("'`a"), Cons.quasiquote(Name('a')));
       expect(exec("'(1)"), Cons(1));
       expect(exec("'(+ 1)"), Cons(Name('+'), Cons(1)));
       expect(
-          exec("'(a `(b ,c))"),
-          Cons(Name('a'),
-              Cons(Quasiquote(Cons(Name('b'), Cons(Unquote(Name('c'))))))));
+        exec("'(a `(b ,c))"),
+        Cons(
+          Name('a'),
+          Cons(Cons.quasiquote(
+            Cons(Name('b'), Cons(Cons.unquote(Name('c')))),
+          )),
+        ),
+      );
     });
     test('Quasiquote', () {
       expect(exec('`()'), isNull);
       expect(exec('`a'), Name('a'));
-      expect(exec("`'a"), Quote(Name('a')));
+      expect(exec("`'a"), Cons.quote(Name('a')));
       expect(exec('`(1)'), Cons(1));
       expect(exec('`(+ 1)'), Cons(Name('+'), Cons(1)));
       expect(exec('`(,(+ 1 1))'), Cons(2));
@@ -406,25 +462,37 @@ void main() {
         exec('`((+ 1 ,(+ 1 1)))'),
         Cons(Cons(Name('+'), Cons(1, Cons(2)))),
       );
-      expect(exec("`('(,(+ 1 1)))"), Cons(Quote(Cons(2))));
+      expect(exec("`('(,(+ 1 1)))"), Cons(Cons.quote(Cons(2))));
       expect(
         exec("`(`(,(+ 1 1)))"),
-        Cons(Quasiquote(Cons(Unquote(Cons(Name('+'), Cons(1, Cons(1))))))),
+        Cons(
+          Cons.quasiquote(
+            Cons(Cons.unquote(Cons(Name('+'), Cons(1, Cons(1))))),
+          ),
+        ),
       );
     });
     test('Splice', () {
       expect(exec('`,@1'), 1);
+      expect(exec('`(,@1)'), 1);
+      expect(() => exec('`(,@1 2)'), throwsArgumentError);
       expect(exec("`(,@())"), isNull);
       expect(exec("`(,@'(1))"), Cons(1));
+      expect(exec("`(1 ,@2)"), Cons(1, 2));
       expect(exec("`(1 ,@'(2) 3)"), Cons(1, Cons(2, Cons(3))));
       expect(exec("`(1 ,@'(2 3) 4)"), Cons(1, Cons(2, Cons(3, Cons(4)))));
       expect(
         exec("`(',@())"),
-        Cons(Quote(null)), // guile: error; sbcl: ((QUOTE))
+        Cons(Cons(Name('quote'))), // guile: error; sbcl: ((QUOTE))
       );
       expect(
         exec("`(',@'(1))"),
-        Cons(Quote(Cons(1))), // guile: ((quote 1)) sbcl: ('1)
+        Cons(Cons.quote(1)), // guile: ((quote 1)) sbcl: ('1)
+      );
+      expect(
+        exec("`(',@'(1 2))"),
+        Cons(Cons(Name('quote'),
+            Cons(1, Cons(2)))), // guile: ((quote 1 2)) sbcl: ((QUOTE 1 2))
       );
     });
     test('Eval', () {

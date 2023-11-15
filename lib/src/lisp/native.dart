@@ -10,6 +10,7 @@ class NativeEnvironment extends Environment {
     define(Name('define'), _define);
     define(Name('lambda'), _lambda);
     define(Name('quote'), _quote);
+    define(Name('quasiquote'), _quasiquote);
     define(Name('eval'), _eval);
     define(Name('apply'), _apply);
     define(Name('let'), _let);
@@ -119,6 +120,55 @@ class NativeEnvironment extends Environment {
   }
 
   static dynamic _quote(Environment env, dynamic args) => args.head;
+
+  static dynamic _quasiquote(Environment env, dynamic args) {
+    if (args is Cons && args.tail == null) {
+      return _quasiquoteImpl(env, args.head);
+    }
+    throw ArgumentError('Invalid quasiquote: $args');
+  }
+
+  static dynamic _quasiquoteImpl(Environment env, dynamic args) {
+    if (args is Cons) {
+      if (args.head == Name('quasiquote')) {
+        return args;
+      }
+      if (args.head == Name('unquote-splicing')) {
+        return eval(env, args.tail!.head);
+      }
+      if (args.head == Name('unquote')) {
+        return eval(env, args.tail!.head);
+      }
+      final head = _quasiquoteImpl(env, args.head);
+      final tail = _quasiquoteImpl(env, args.tail);
+      if (head == null && tail == null) {
+        return null;
+      } else if (__isSplice(args.head)) {
+        if (head is Cons) {
+          __lastCell(head).cdr = tail;
+        } else if (tail != null) {
+          throw ArgumentError('Invalid splice: $args');
+        }
+        return head;
+      } else if (__isSplice(args.tail?.head) && head is Cons) {
+        return head..cdr = tail;
+      } else {
+        return Cons(head, tail);
+      }
+    } else {
+      return args;
+    }
+  }
+
+  static Cons __lastCell(Cons head) {
+    while (head.tail != null) {
+      head = head.tail!;
+    }
+    return head;
+  }
+
+  static bool __isSplice(dynamic arg) =>
+      arg is Cons && arg.head == Name('unquote-splicing');
 
   static dynamic _eval(Environment env, dynamic args) =>
       eval(env.create(), eval(env, args.head));
