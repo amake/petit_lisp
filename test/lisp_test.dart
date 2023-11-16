@@ -473,7 +473,7 @@ void main() {
       final env = standard.create();
       env.define(Name('x'), 0);
       exec(
-          '(macro (inc var)'
+          '(define-macro (inc var)'
           "  (cons 'set! (cons var (cons (cons '+ (cons 1 (cons var '()))) '()))))"
           '(inc x)'
           '(inc x)',
@@ -955,7 +955,7 @@ void main() {
         ..define(Name('x'), null)
         ..define(Name('y'), null);
       exec(
-          '(macro (set2! a b val)'
+          '(define-macro (set2! a b val)'
           "  (list 'progn (list 'set! a val) (list 'set! b val)))"
           '(set2! x y 1)',
           env);

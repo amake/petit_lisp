@@ -17,7 +17,7 @@ class NativeEnvironment extends Environment {
     define(Name('set!'), _set);
     define(Name('print'), _print);
     define(Name('progn'), _progn);
-    define(Name('macro'), _macro);
+    define(Name('define-macro'), _defineMacro);
 
     // control structures
     define(Name('if'), _if);
@@ -101,7 +101,7 @@ class NativeEnvironment extends Environment {
         return evalList(inner, lambdaArgs.tail);
       };
 
-  static dynamic _macro(Environment env, dynamic args) {
+  static dynamic _defineMacro(Environment env, dynamic args) {
     if (args.head is Cons) {
       final Cons head = args.head;
       if (head.head is Name) {
