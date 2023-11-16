@@ -150,8 +150,6 @@ class NativeEnvironment extends Environment {
           throw ArgumentError('Invalid splice: $args');
         }
         return head;
-      } else if (__isSplice(args.tail?.head) && head is Cons) {
-        return head..cdr = tail;
       } else {
         return Cons(head, tail);
       }

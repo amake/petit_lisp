@@ -537,6 +537,22 @@ void main() {
       expect(exec("`(1 ,@'(2) 3)"), Cons(1, Cons(2, Cons(3))));
       expect(exec("`(1 ,@'(2 3) 4)"), Cons(1, Cons(2, Cons(3, Cons(4)))));
       expect(
+        exec("`(1 (2 3) ,@4)"),
+        Cons(1, Cons(Cons(2, Cons(3)), 4)),
+      );
+      expect(
+        exec("`(1 (2 3) ,@'(4))"),
+        Cons(1, Cons(Cons(2, Cons(3)), Cons(4))),
+      );
+      expect(
+        exec("`(1 () ,@'(4))"),
+        Cons(1, Cons(null, Cons(4))),
+      );
+      expect(
+        exec("`(1 ,@'(4) ())"),
+        Cons(1, Cons(4, null)),
+      );
+      expect(
         exec("`(',@())"),
         Cons(Cons(Name('quote'))), // guile: error; sbcl: ((QUOTE))
       );
