@@ -165,6 +165,8 @@ class NativeEnvironment extends Environment {
       } else if (__isSplice(args.head)) {
         if (head is Cons) {
           __lastCell(head).cdr = tail;
+        } else if (head == null) {
+          return tail;
         } else if (tail != null) {
           throw ArgumentError('Invalid splice: $args');
         }

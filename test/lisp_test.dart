@@ -546,6 +546,9 @@ void main() {
       expect(exec('`,@1'), 1);
       expect(exec('`(,@1)'), 1);
       expect(() => exec('`(,@1 2)'), throwsArgumentError);
+      expect(exec("`(,@'(1) 2)"), Cons(1, Cons(2)));
+      expect(exec("`(,@() 2)"), Cons(2));
+      expect(exec("`(,@'() 2)"), Cons(2));
       expect(exec("`(,@())"), isNull);
       expect(exec("`(,@null)"), isNull);
       expect(exec("`(,@'(1))"), Cons(1));
