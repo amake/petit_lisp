@@ -598,6 +598,9 @@ void main() {
       expect(exec('(let ((a 1) (b 2)) b)'), 2);
       expect(exec('(let ((a 1) (b 2)) (+ a b))'), 3);
       expect(exec('(let ((a 1) (b 2)) (+ a b) 4)'), 4);
+      expect(exec('(let (a) a)'), isNull);
+      expect(exec('(let (a) (set! a 1) a)'), 1);
+      expect(() => exec('(let (1))'), throwsArgumentError);
     });
     test('Progn', () {
       final env = standard.create();

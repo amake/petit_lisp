@@ -204,6 +204,9 @@ class NativeEnvironment extends Environment {
       final definition = binding.head;
       if (definition is Cons) {
         inner.define(definition.head, eval(env, definition.tail?.head));
+      } else if (definition is Name) {
+        // This is a Lispism, not a Schemism, but we allow it anyway
+        inner.define(definition, null);
       } else {
         throw ArgumentError('Invalid let: $args');
       }
