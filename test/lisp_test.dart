@@ -480,6 +480,22 @@ void main() {
           env);
       expect(env[Name('x')], 2);
     });
+    test('Make-symbol', () {
+      final symbols = List.generate(10, (_) => exec('(make-symbol "foo")'));
+      for (final sym in symbols) {
+        expect(sym, isName);
+      }
+      expect(symbols.map((sym) => sym.toString()).toSet().length, 1);
+      expect(Name(symbols[0].toString()), isNot(symbols[0]));
+    });
+    test('Gensym', () {
+      final symbols = List.generate(10, (_) => exec('(gensym)'));
+      for (final sym in symbols) {
+        expect(sym, isName);
+      }
+      expect(symbols.map((sym) => sym.toString()).toSet().length, 10);
+      expect(Name(symbols[0].toString()), symbols[0]);
+    });
     test('Quote', () {
       expect(exec('(quote 1)'), 1);
       expect(exec('(quote a)'), Name('a'));
@@ -961,6 +977,21 @@ void main() {
           env);
       expect(env[Name('x')], 1);
       expect(env[Name('y')], 1);
+    });
+    test('Macro (make-symbol)', () {
+      final env = standard.create()..define(Name('foo'), 0);
+      exec(
+          '(define-macro (for var from init to final do &rest body)'
+          '  (let ((tempvar (make-symbol "max")))'
+          '    `(let ((,var ,init)'
+          '           (,tempvar ,final))'
+          '       (while (<= ,var ,tempvar)'
+          '         ,@body'
+          '         (set! ,var (+ 1 ,var))))))'
+          '(for x from 1 to 10 do'
+          '  (set! foo (+ 1 foo)))',
+          env);
+      expect(env[Name('foo')], 10);
     });
     test('Exit infinite loop', () {
       final start = DateTime.timestamp().millisecondsSinceEpoch;

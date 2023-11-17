@@ -18,6 +18,8 @@ class NativeEnvironment extends Environment {
     define(Name('print'), _print);
     define(Name('progn'), _progn);
     define(Name('define-macro'), _defineMacro);
+    define(Name('make-symbol'), _makeSymbol);
+    define(Name('gensym'), _gensym);
 
     // control structures
     define(Name('if'), _if);
@@ -117,6 +119,23 @@ class NativeEnvironment extends Environment {
   static Lambda _macroImpl(Environment lambdaEnv, dynamic lambdaArgs) {
     final generator = _lambda(lambdaEnv, lambdaArgs, shouldEvalArgs: false);
     return (evalEnv, evalArgs) => eval(evalEnv, generator(evalEnv, evalArgs));
+  }
+
+  static dynamic _makeSymbol(Environment env, dynamic args) {
+    if (args is Cons && args.tail == null) {
+      return Name.uninterned(args.head);
+    }
+    throw ArgumentError('Invalid symbol: $args');
+  }
+
+  static dynamic _gensym(Environment env, dynamic args) {
+    for (var i = 0; i < double.maxFinite; i++) {
+      final name = 'g$i';
+      if (!Name.isInterned(name)) {
+        return Name(name);
+      }
+    }
+    throw StateError('Could not generate symbol');
   }
 
   static dynamic _quote(Environment env, dynamic args) => args.head;
