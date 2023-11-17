@@ -913,6 +913,94 @@ void main() {
       expect(exec('(unless null 1)'), 1);
       expect(exec('(unless "foo" 1)'), isNull);
     });
+    test('Caar', () {
+      expect(exec("(caar '())"), isNull);
+      expect(() => exec("(caar '(1))"), throwsArgumentError);
+      expect(exec("(caar '((1)))"), 1);
+      expect(exec("(caar '((1 2)))"), 1);
+      expect(exec("(caar '((1) 2))"), 1);
+      expect(exec("(caar '((1) . 2))"), 1);
+    });
+    test('Cadr', () {
+      expect(exec("(cadr '())"), isNull);
+      expect(exec("(cadr '(1))"), isNull);
+      expect(exec("(cadr '(1 2))"), 2);
+      expect(exec("(cadr '(1 2 3))"), 2);
+      expect(() => exec("(cadr '(1 . 2))"), throwsArgumentError);
+    });
+    test('Cdar', () {
+      expect(exec("(cdar '())"), isNull);
+      expect(() => exec("(cdar '(1))"), throwsArgumentError);
+      expect(exec("(cdar '((1)))"), isNull);
+      expect(exec("(cdar '((1 2)))"), Cons(2));
+      expect(exec("(cdar '((1 . 2)))"), 2);
+      expect(exec("(cdar '((1 2) 3))"), Cons(2));
+      expect(() => exec("(cdar '(1 . 2))"), throwsArgumentError);
+    });
+    test('Cddr', () {
+      expect(exec("(cddr '())"), isNull);
+      expect(exec("(cddr '(1))"), isNull);
+      expect(exec("(cddr '(1 2))"), isNull);
+      expect(exec("(cddr '(1 2 3))"), Cons(3));
+      expect(exec("(cddr '(1 2 3 4))"), Cons(3, Cons(4)));
+      expect(exec("(cddr '(1 . (2 3)))"), Cons(3));
+    });
+    test('Caaar', () {
+      expect(exec("(caaar '())"), isNull);
+      expect(() => exec("(caaar '(1))"), throwsArgumentError);
+      expect(() => exec("(caaar '((1)))"), throwsArgumentError);
+      expect(exec("(caaar '(((1))))"), 1);
+    });
+    test('Cdaar', () {
+      expect(exec("(cdaar '())"), isNull);
+      expect(() => exec("(cdaar '(1))"), throwsArgumentError);
+      expect(() => exec("(cdaar '((1)))"), throwsArgumentError);
+      expect(exec("(cdaar '(((1))))"), isNull);
+      expect(exec("(cdaar '(((1 2))))"), Cons(2));
+    });
+    test('Cadar', () {
+      expect(exec("(cadar '())"), isNull);
+      expect(() => exec("(cadar '(1))"), throwsArgumentError);
+      expect(exec("(cadar '((1)))"), isNull);
+      expect(exec("(cadar '((1 2)))"), 2);
+      expect(exec("(cadar '((1 2 3)))"), 2);
+    });
+    test('Caadr', () {
+      expect(exec("(caadr '())"), isNull);
+      expect(exec("(caadr '(1))"), isNull);
+      expect(() => exec("(caadr '(1 2))"), throwsArgumentError);
+      expect(exec("(caadr '(1 (2)))"), 2);
+      expect(exec("(caadr '(1 (2 3)))"), 2);
+    });
+    test('Cddar', () {
+      expect(exec("(cddar '())"), isNull);
+      expect(() => exec("(cddar '(1))"), throwsArgumentError);
+      expect(exec("(cddar '((1)))"), isNull);
+      expect(exec("(cddar '((1 2)))"), isNull);
+      expect(exec("(cddar '((1 2 3)))"), Cons(3));
+    });
+    test('Caddr', () {
+      expect(exec("(caddr '())"), isNull);
+      expect(exec("(caddr '(1))"), isNull);
+      expect(exec("(caddr '(1 2))"), isNull);
+      expect(exec("(caddr '(1 2 3))"), 3);
+      expect(exec("(caddr '(1 2 3 4))"), 3);
+      expect(() => exec("(caddr '(1 . 2))"), throwsArgumentError);
+    });
+    test('Cdadr', () {
+      expect(exec("(cdadr '())"), isNull);
+      expect(exec("(cdadr '(1))"), isNull);
+      expect(() => exec("(cdadr '(1 2))"), throwsArgumentError);
+      expect(exec("(cdadr '(1 (2)))"), isNull);
+      expect(exec("(cdadr '(1 (2 3)))"), Cons(3));
+    });
+    test('Cdddr', () {
+      expect(exec("(cdddr '())"), isNull);
+      expect(exec("(cdddr '(1))"), isNull);
+      expect(exec("(cdddr '(1 2))"), isNull);
+      expect(exec("(cdddr '(1 2 3))"), isNull);
+      expect(exec("(cdddr '(1 2 3 4))"), Cons(4));
+    });
     test('Length', () {
       expect(exec("(length '())"), 0);
       expect(exec("(length '(1))"), 1);

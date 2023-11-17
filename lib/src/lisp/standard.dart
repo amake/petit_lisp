@@ -24,6 +24,20 @@ class StandardEnvironment extends Environment {
 (define-macro (unless test &rest body)
   `(if (not ,test) (progn ,@body)))
 
+; accessors
+(define (caar x) (car (car x)))
+(define (cadr x) (car (cdr x)))
+(define (cdar x) (cdr (car x)))
+(define (cddr x) (cdr (cdr x)))
+(define (caaar x) (car (car (car x))))
+(define (cdaar x) (cdr (car (car x))))
+(define (cadar x) (car (cdr (car x))))
+(define (caadr x) (car (car (cdr x))))
+(define (cddar x) (cdr (cdr (car x))))
+(define (caddr x) (car (cdr (cdr x))))
+(define (cdadr x) (cdr (car (cdr x))))
+(define (cdddr x) (cdr (cdr (cdr x))))
+
 ; list functions
 (define (list &rest args) args)
 
