@@ -836,6 +836,15 @@ void main() {
       expect(exec('(>= "a" "b")'), isFalse);
       expect(exec('(>= "b" "a")'), isTrue);
     });
+    test('eq?', () {
+      expect(exec('(eq? 1 1)'), true);
+      expect(exec('(eq? 1 2)'), false);
+      expect(exec('(eq? 1 1.0)'), false);
+      expect(exec('(eq? 1.0 1.0)'), true);
+      expect(exec('(eq? "foo" "foo")'), false);
+      expect(exec('(eq? "foo" "bar")'), false);
+      expect(exec("(eq? 'foo 'foo)"), true);
+    });
     test('Cons', () {
       expect(exec('(cons 1 2)'), Cons(1, 2));
       expect(exec('(cons 1 null)'), Cons(1));

@@ -43,6 +43,9 @@ class NativeEnvironment extends Environment {
     define(Name('>'), _larger);
     define(Name('>='), _largerOrEqual);
 
+    // other comparators
+    define(Name('eq?'), _eq);
+
     // list operators
     define(Name('cons'), _cons);
     define(Name('car'), _car);
@@ -362,6 +365,12 @@ class NativeEnvironment extends Environment {
     final Comparable a = eval(env, args.head);
     final Comparable b = eval(env, args.tail.head);
     return a.compareTo(b) >= 0;
+  }
+
+  static dynamic _eq(Environment env, dynamic args) {
+    final a = eval(env, args.head);
+    final b = eval(env, args.tail.head);
+    return identical(a, b);
   }
 
   static dynamic _cons(Environment env, dynamic args) {
