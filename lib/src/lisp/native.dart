@@ -150,19 +150,25 @@ class NativeEnvironment extends Environment {
     throw ArgumentError('Invalid quasiquote: $args');
   }
 
-  static dynamic _quasiquoteImpl(Environment env, dynamic args) {
+  static dynamic _quasiquoteImpl(
+    Environment env,
+    dynamic args, [
+    bool isHead = true,
+  ]) {
     if (args is Cons) {
       if (args.head == Name('quasiquote')) {
         return args;
       }
       if (args.head == Name('unquote-splicing')) {
-        return eval(env, args.tail!.head);
+        return isHead
+            ? eval(env, args.tail!.head)
+            : Cons(args.head, _quasiquoteImpl(env, args.tail));
       }
       if (args.head == Name('unquote')) {
         return eval(env, args.tail!.head);
       }
       final head = _quasiquoteImpl(env, args.head);
-      final tail = _quasiquoteImpl(env, args.cdr);
+      final tail = _quasiquoteImpl(env, args.cdr, false);
       if (head == null && tail == null) {
         return null;
       } else if (__isSplice(args.head)) {

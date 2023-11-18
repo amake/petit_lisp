@@ -858,6 +858,16 @@ void main() {
       expect(exec("'(1 . 2)"), Cons(1, 2));
       expect(exec("`(1 . 2)"), Cons(1, 2));
       expect(exec("`(1 . ,(+ 1 1))"), Cons(1, 2));
+      expect(exec("`(1 . '2)"), Cons(1, Cons(Name('quote'), Cons(2))));
+      expect(
+        exec("`(1 . ,@2)"),
+        Cons(1, Cons(Name('unquote-splicing'), Cons(2))),
+      );
+      expect(
+        exec("`(1 . ,@(2 ,(+ 1 1)))"),
+        Cons(1, Cons(Name('unquote-splicing'), Cons(Cons(2, Cons(2))))),
+      );
+      expect(exec("`(1 . `2)"), Cons(1, Cons(Name('quasiquote'), Cons(2))));
       expect(exec("'(1 . (2 . 3))"), Cons(1, Cons(2, 3)));
       expect(exec("'(1 . ())"), Cons(1));
       expect(exec("'(1 . null)"), Cons(1));
