@@ -945,6 +945,13 @@ void main() {
       expect(exec('''(member "foo" '("bar" "foo" "baz"))'''), true);
       expect(exec('''(member "foo" '("bar" "foo" "baz") eq?)'''), false);
     });
+    test('memq', () {
+      expect(exec("(memq 1 '(1 2 3))"), true);
+      expect(exec("(memq 2 '(1 2 3))"), true);
+      expect(exec("(memq 3 '(1 2 3))"), true);
+      expect(exec("(memq 4 '(1 2 3))"), false);
+      expect(exec('''(memq "foo" '("bar" "foo" "baz"))'''), false);
+    });
   });
   group('Examples', () {
     test('Fibonacci', () {

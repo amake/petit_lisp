@@ -68,5 +68,8 @@ class StandardEnvironment extends Environment {
   (if list
     (or ((or compare-fn =) element (car list))
         (member element (cdr list) compare-fn))))
+
+(define (memq element list)
+  (member element list eq?))
 """;
 }
