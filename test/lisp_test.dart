@@ -937,6 +937,14 @@ void main() {
       expect(exec("(inject '(2) 5 (lambda (s e) (+ s e 1)))"), 8);
       expect(exec("(inject '(2 3) 5 (lambda (s e) (+ s e 1)))"), 12);
     });
+    test('member', () {
+      expect(exec("(member 1 '(1 2 3))"), true);
+      expect(exec("(member 2 '(1 2 3))"), true);
+      expect(exec("(member 3 '(1 2 3))"), true);
+      expect(exec("(member 4 '(1 2 3))"), false);
+      expect(exec('''(member "foo" '("bar" "foo" "baz"))'''), true);
+      expect(exec('''(member "foo" '("bar" "foo" "baz") eq?)'''), false);
+    });
   });
   group('Examples', () {
     test('Fibonacci', () {

@@ -63,5 +63,10 @@ class StandardEnvironment extends Environment {
       (cdr list)
       (proc value (car list))
       proc)))
+
+(define (member element list &optional compare-fn)
+  (if list
+    (or ((or compare-fn =) element (car list))
+        (member element (cdr list) compare-fn))))
 """;
 }
