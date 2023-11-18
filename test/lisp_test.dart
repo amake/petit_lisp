@@ -868,6 +868,7 @@ void main() {
     test('Car', () {
       expect(exec('(car null)'), isNull);
       expect(exec('(car (cons 1 2))'), 1);
+      expect(() => exec('(car 1)'), throwsArgumentError);
     });
     test('Car!', () {
       expect(exec('(car! null 3)'), isNull);
@@ -876,6 +877,7 @@ void main() {
     test('Cdr', () {
       expect(exec('(cdr null)'), isNull);
       expect(exec('(cdr (cons 1 2))'), 2);
+      expect(() => exec('(cdr 1)'), throwsArgumentError);
     });
     test('Cdr!', () {
       expect(exec('(cdr! null 3)'), isNull);

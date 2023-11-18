@@ -381,7 +381,12 @@ class NativeEnvironment extends Environment {
 
   static dynamic _car(Environment env, dynamic args) {
     final cons = eval(env, args.head);
-    return cons is Cons ? cons.head : null;
+    if (cons == null) {
+      return null;
+    } else if (cons is Cons) {
+      return cons.head;
+    }
+    throw ArgumentError('Invalid car: $args');
   }
 
   static dynamic _carSet(Environment env, dynamic args) {
@@ -394,7 +399,12 @@ class NativeEnvironment extends Environment {
 
   static dynamic _cdr(Environment env, dynamic args) {
     final cons = eval(env, args.head);
-    return cons is Cons ? cons.cdr : null;
+    if (cons == null) {
+      return null;
+    } else if (cons is Cons) {
+      return cons.cdr;
+    }
+    throw ArgumentError('Invalid cdr: $args');
   }
 
   static dynamic _cdrSet(Environment env, dynamic args) {
