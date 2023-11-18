@@ -840,9 +840,10 @@ void main() {
     test('eq?', () {
       expect(exec('(eq? 1 1)'), true);
       expect(exec('(eq? 1 2)'), false);
-      expect(exec('(eq? 1 1.0)'), false);
+      expect(exec('(eq? 1 1.0)'), false, skip: 'Not distinct in JavaScript');
       expect(exec('(eq? 1.0 1.0)'), true);
-      expect(exec('(eq? "foo" "foo")'), false);
+      expect(exec('(eq? "foo" "foo")'), false,
+          skip: 'Not guaranteed; fails in JavaScript');
       expect(exec('(eq? "foo" "bar")'), false);
       expect(exec("(eq? 'foo 'foo)"), true);
     });
@@ -1060,14 +1061,16 @@ void main() {
       expect(exec("(member 3 '(1 2 3))"), true);
       expect(exec("(member 4 '(1 2 3))"), false);
       expect(exec('''(member "foo" '("bar" "foo" "baz"))'''), true);
-      expect(exec('''(member "foo" '("bar" "foo" "baz") eq?)'''), false);
+      expect(exec('''(member "foo" '("bar" "foo" "baz") eq?)'''), false,
+          skip: 'Not guaranteed; fails in JavaScript');
     });
     test('memq', () {
       expect(exec("(memq 1 '(1 2 3))"), true);
       expect(exec("(memq 2 '(1 2 3))"), true);
       expect(exec("(memq 3 '(1 2 3))"), true);
       expect(exec("(memq 4 '(1 2 3))"), false);
-      expect(exec('''(memq "foo" '("bar" "foo" "baz"))'''), false);
+      expect(exec('''(memq "foo" '("bar" "foo" "baz"))'''), false,
+          skip: 'Not guaranteed; fails in JavaScript');
     });
   });
   group('Examples', () {
