@@ -895,6 +895,20 @@ void main() {
       expect(exec('(null? true)'), isFalse);
       expect(exec('(null? false)'), isFalse);
     });
+    test('When', () {
+      expect(exec('(when true 1)'), 1);
+      expect(exec('(when true 1 (+ 1 1))'), 2);
+      expect(exec('(when false 1)'), isNull);
+      expect(exec('(when null 1)'), isNull);
+      expect(exec('(when "foo" 1)'), 1);
+    });
+    test('Unless', () {
+      expect(exec('(unless true 1)'), isNull);
+      expect(exec('(unless true 1 (+ 1 1))'), isNull);
+      expect(exec('(unless false 1)'), 1);
+      expect(exec('(unless null 1)'), 1);
+      expect(exec('(unless "foo" 1)'), isNull);
+    });
     test('Length', () {
       expect(exec("(length '())"), 0);
       expect(exec("(length '(1))"), 1);
