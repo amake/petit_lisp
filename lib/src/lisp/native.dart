@@ -162,7 +162,7 @@ class NativeEnvironment extends Environment {
         return eval(env, args.tail!.head);
       }
       final head = _quasiquoteImpl(env, args.head);
-      final tail = _quasiquoteImpl(env, args.tail);
+      final tail = _quasiquoteImpl(env, args.cdr);
       if (head == null && tail == null) {
         return null;
       } else if (__isSplice(args.head)) {

@@ -856,6 +856,8 @@ void main() {
     });
     test('Cons (syntax)', () {
       expect(exec("'(1 . 2)"), Cons(1, 2));
+      expect(exec("`(1 . 2)"), Cons(1, 2));
+      expect(exec("`(1 . ,(+ 1 1))"), Cons(1, 2));
       expect(exec("'(1 . (2 . 3))"), Cons(1, Cons(2, 3)));
       expect(exec("'(1 . ())"), Cons(1));
       expect(exec("'(1 . null)"), Cons(1));
