@@ -286,7 +286,7 @@ class NativeEnvironment extends Environment {
   }
 
   static dynamic _not(Environment env, dynamic args) =>
-      !truthy(eval(env, args.head));
+      !truthy(eval(env, args?.head));
 
   static dynamic _plus(Environment env, dynamic args) {
     num value = eval(env, args.head);

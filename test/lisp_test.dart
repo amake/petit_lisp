@@ -760,6 +760,7 @@ void main() {
       expect(exec('(not "foo")'), isFalse);
       expect(exec("(not '(a))"), isFalse);
       expect(exec("(not '())"), isTrue);
+      expect(exec("(not null)"), isTrue);
     });
     test('Add', () {
       expect(exec('(+ 1)'), 1);
