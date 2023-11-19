@@ -930,6 +930,18 @@ void main() {
       expect(exec('(unless null 1)'), 1);
       expect(exec('(unless "foo" 1)'), isNull);
     });
+    test('let*', () {
+      expect(exec('(let* ((a 1)) a)'), 1);
+      expect(exec('(let* ((a 1) (b 2)) a)'), 1);
+      expect(exec('(let* ((a 1) (b 2)) b)'), 2);
+      expect(exec('(let* ((a 1) (b 2)) (+ a b))'), 3);
+      expect(exec('(let* ((a 1) (b 2)) (+ a b) 4)'), 4);
+      expect(exec('(let* (a) a)'), isNull);
+      expect(exec('(let* (a) (set! a 1) a)'), 1);
+      expect(() => exec('(let* (1))'), throwsArgumentError);
+      expect(exec('(let* ((a 1) (b (+ 1 a))) b)'), 2);
+      expect(exec('(let* ((a 1) (b (+ 1 a)) (c (+ 1 b))) (+ a b c))'), 6);
+    });
     test('Caar', () {
       expect(exec("(caar '())"), isNull);
       expect(() => exec("(caar '(1))"), throwsArgumentError);

@@ -21,8 +21,16 @@ class StandardEnvironment extends Environment {
 ; control flow
 (define-macro (when test &rest body)
   `(if ,test (progn ,@body)))
+
 (define-macro (unless test &rest body)
   `(if (not ,test) (progn ,@body)))
+
+(define-macro (let* bindings &rest body)
+  (if (null? bindings)
+    `(progn ,@body)
+    `(let (,(car bindings))
+       (let* ,(cdr bindings)
+         ,@body))))
 
 ; accessors
 (define (caar x) (car (car x)))
