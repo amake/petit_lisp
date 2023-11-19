@@ -104,5 +104,16 @@ class StandardEnvironment extends Environment {
 
 (define (memq element list)
   (member element list eq?))
+
+(define-macro (cond &rest clauses)
+  (when clauses
+    (let* ((clause (car clauses))
+           (tempcond (make-symbol " cond"))
+           (body (cdr clause))
+           (rest (cdr clauses)))
+      `(let ((,tempcond ,(car clause)))
+         (if ,tempcond
+           ,(if body `(progn ,@body) tempcond)
+           (cond ,@rest))))))
 """;
 }

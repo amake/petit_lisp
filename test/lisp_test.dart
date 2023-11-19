@@ -1097,6 +1097,16 @@ void main() {
       expect(exec('''(memq "foo" '("bar" "foo" "baz"))'''), false,
           skip: 'Not guaranteed; fails in JavaScript');
     });
+    test('cond', () {
+      expect(exec('(cond)'), isNull);
+      expect(exec('(cond ())'), isNull);
+      expect(exec('(cond (1))'), 1);
+      expect(exec('(cond (false))'), isNull);
+      expect(exec('(cond (1) (2))'), 1);
+      expect(exec('(cond (false 1) (true 2))'), 2);
+      expect(exec('(cond (false 1) (false 2) (true 3))'), 3);
+      expect(exec('(cond (null 1) ((> 1 2) 2) (true 3))'), 3);
+    });
   });
   group('Examples', () {
     test('Fibonacci', () {
