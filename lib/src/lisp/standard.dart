@@ -41,6 +41,11 @@ class StandardEnvironment extends Environment {
 ; list functions
 (define (list &rest args) args)
 
+(define (list? x)
+  (or (null? x)
+      (and (pair? x)
+           (or (null? (cdr x)) (list? (cdr x))))))
+
 (define (length list)
   (if (null? list)
       0

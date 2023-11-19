@@ -847,6 +847,12 @@ void main() {
       expect(exec('(eq? "foo" "bar")'), false);
       expect(exec("(eq? 'foo 'foo)"), true);
     });
+    test('pair?', () {
+      expect(exec("(pair? '())"), isFalse);
+      expect(exec("(pair? '(1))"), isTrue);
+      expect(exec("(pair? '(1 2))"), isTrue);
+      expect(exec("(pair? '(1 . 2))"), isTrue);
+    });
     test('Cons', () {
       expect(exec('(cons 1 2)'), Cons(1, 2));
       expect(exec('(cons 1 null)'), Cons(1));
@@ -1032,6 +1038,13 @@ void main() {
       expect(exec('(list)'), isNull);
       expect(exec('(list 1 (+ 1 1))'), Cons(1, Cons(2)));
       expect(exec('(list 1 (+ 1 1) "foo")'), Cons(1, Cons(2, Cons('foo'))));
+    });
+    test('list?', () {
+      expect(exec("(list? '())"), isTrue);
+      expect(exec("(list? '(1))"), isTrue);
+      expect(exec("(list? '(1 2))"), isTrue);
+      expect(exec("(list? '(1 . 2))"), isFalse);
+      expect(exec("(list? '(1 2 . 3))"), isFalse);
     });
     test('List Head', () {
       expect(exec("(list-head '(5 6 7) 0)"), 5);

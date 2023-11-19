@@ -45,6 +45,7 @@ class NativeEnvironment extends Environment {
 
     // other comparators
     define(Name('eq?'), _eq);
+    define(Name('pair?'), _isPair);
 
     // list operators
     define(Name('cons'), _cons);
@@ -420,4 +421,7 @@ class NativeEnvironment extends Environment {
     }
     return cons;
   }
+
+  static dynamic _isPair(Environment env, dynamic args) =>
+      eval(env, args.head) is Cons;
 }
