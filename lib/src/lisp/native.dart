@@ -4,11 +4,15 @@ import 'evaluator.dart';
 import 'name.dart';
 import 'types.dart';
 
+typedef _LambdaBuilder = Lambda Function(Environment lambdaEnv, dynamic args);
+
 class NativeEnvironment extends Environment {
   NativeEnvironment([super.owner]) {
     // basic functions
-    define(Name('define'), _define);
+    define(Name('define'), _define(_lambda));
+    define(Name('define*'), _define(_lambdaStar));
     define(Name('lambda'), _lambda);
+    define(Name('lambda*'), _lambdaStar);
     define(Name('quote'), _quote);
     define(Name('quasiquote'), _quasiquote);
     define(Name('eval'), _eval);
@@ -55,17 +59,19 @@ class NativeEnvironment extends Environment {
     define(Name('cdr!'), _cdrSet);
   }
 
-  static dynamic _define(Environment env, dynamic args) {
-    if (args.head is Name) {
-      return env.define(args.head, evalList(env, args.tail));
-    } else if (args.head is Cons) {
-      final Cons head = args.head;
-      if (head.head is Name) {
-        return env.define(head.head, _lambda(env, Cons(head.tail, args.tail)));
-      }
-    }
-    throw ArgumentError('Invalid define: $args');
-  }
+  static dynamic _define(_LambdaBuilder lambdaBuilder) =>
+      (Environment env, dynamic args) {
+        if (args.head is Name) {
+          return env.define(args.head, evalList(env, args.tail));
+        } else if (args.head is Cons) {
+          final Cons head = args.head;
+          if (head.head is Name) {
+            return env.define(
+                head.head, lambdaBuilder(env, Cons(head.tail, args.tail)));
+          }
+        }
+        throw ArgumentError('Invalid define: $args');
+      };
 
   static Lambda _lambda(
     Environment lambdaEnv,
@@ -77,14 +83,32 @@ class NativeEnvironment extends Environment {
         var names = lambdaArgs.head;
         var values =
             shouldEvalArgs ? evalArguments(evalEnv, evalArgs) : evalArgs;
+        while (names != null) {
+          inner.define(names.head, values.head);
+          names = names.tail;
+          values = values.tail;
+        }
+        return evalList(inner, lambdaArgs.tail);
+      };
+
+  static Lambda _lambdaStar(
+    Environment lambdaEnv,
+    dynamic lambdaArgs, {
+    bool shouldEvalArgs = true,
+  }) =>
+      (evalEnv, evalArgs) {
+        final inner = lambdaEnv.create();
+        var names = lambdaArgs.head;
+        var values =
+            shouldEvalArgs ? evalArguments(evalEnv, evalArgs) : evalArgs;
         var optional = false;
         while (names != null) {
-          if (!optional && names.head == Name('&optional')) {
+          if (!optional && __isOptional(names.head)) {
             optional = true;
             names = names.tail;
             continue;
           }
-          if (optional && names.head == Name('&optional')) {
+          if (optional && __isOptional(names.head)) {
             throw ArgumentError('Invalid lambda: $lambdaArgs');
           }
           if (optional && values == null) {
@@ -92,7 +116,7 @@ class NativeEnvironment extends Environment {
             names = names.tail;
             continue;
           }
-          if (names.head == Name('&rest')) {
+          if (__isRest(names.head)) {
             final restArg = names.tail?.head;
             if (restArg is! Name) {
               throw ArgumentError('Invalid lambda: $lambdaArgs');
@@ -106,6 +130,12 @@ class NativeEnvironment extends Environment {
         }
         return evalList(inner, lambdaArgs.tail);
       };
+
+  static dynamic __isOptional(dynamic arg) =>
+      arg == Name('&optional') || arg == Name('#:optional');
+
+  static dynamic __isRest(dynamic arg) =>
+      arg == Name('&rest') || arg == Name('#:rest');
 
   static dynamic _defineMacro(Environment env, dynamic args) {
     if (args.head is Cons) {
@@ -121,7 +151,7 @@ class NativeEnvironment extends Environment {
   }
 
   static Lambda _macroImpl(Environment lambdaEnv, dynamic lambdaArgs) {
-    final generator = _lambda(lambdaEnv, lambdaArgs, shouldEvalArgs: false);
+    final generator = _lambdaStar(lambdaEnv, lambdaArgs, shouldEvalArgs: false);
     return (evalEnv, evalArgs) => eval(evalEnv, generator(evalEnv, evalArgs));
   }
 

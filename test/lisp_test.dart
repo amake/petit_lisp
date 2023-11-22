@@ -447,25 +447,25 @@ void main() {
       expect(exec('((lambda (x y) (+ x y)) 2 4)'), 6);
       expect(exec('((lambda (x y z) (+ x y z)) 2 4 6)'), 12);
     });
-    test('Lambda (&optional)', () {
-      expect(exec('((lambda (x y &optional z) (+ x y)) 2 4)'), 6);
-      expect(exec('((lambda (x y &optional z) (+ x y z)) 2 4 6)'), 12);
-      expect(exec('((lambda (x y &optional z) z) 2 4)'), null);
+    test('Lambda* (#:optional)', () {
+      expect(exec('((lambda* (x y #:optional z) (+ x y)) 2 4)'), 6);
+      expect(exec('((lambda* (x y #:optional z) (+ x y z)) 2 4 6)'), 12);
+      expect(exec('((lambda* (x y #:optional z) z) 2 4)'), null);
       expect(
-        () => exec('((lambda (x y &optional z) (+ x y z)) 2 4)'),
+        () => exec('((lambda* (x y #:optional z) (+ x y z)) 2 4)'),
         throwsA(isA<TypeError>()),
       );
       expect(
-        () => exec('((lambda (x y &optional &optional) (+ x y)) 2 4)'),
+        () => exec('((lambda* (x y #:optional #:optional) (+ x y)) 2 4)'),
         throwsArgumentError,
       );
     });
-    test('Lambda (&rest)', () {
-      expect(exec('((lambda (x y &rest args) (length args)) 2 4)'), 0);
-      expect(exec('((lambda (x y &rest args) (length args)) 2 4 6)'), 1);
-      expect(exec('((lambda (x y &rest args) (length args)) 2 4 6 8)'), 2);
+    test('Lambda* (#:rest)', () {
+      expect(exec('((lambda* (x y #:rest args) (length args)) 2 4)'), 0);
+      expect(exec('((lambda* (x y #:rest args) (length args)) 2 4 6)'), 1);
+      expect(exec('((lambda* (x y #:rest args) (length args)) 2 4 6 8)'), 2);
       expect(
-        () => exec('((lambda (x y &rest) (+ x y)) 2 4)'),
+        () => exec('((lambda* (x y #:rest) (+ x y)) 2 4)'),
         throwsArgumentError,
       );
     });
@@ -1175,7 +1175,7 @@ void main() {
     test('Macro (make-symbol)', () {
       final env = standard.create()..define(Name('foo'), 0);
       exec(
-          '(define-macro (for var from init to final do &rest body)'
+          '(define-macro (for var from init to final do #:rest body)'
           '  (let ((tempvar (make-symbol "max")))'
           '    `(let ((,var ,init)'
           '           (,tempvar ,final))'

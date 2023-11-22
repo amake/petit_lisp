@@ -19,13 +19,13 @@ class StandardEnvironment extends Environment {
 (define false (or))
 
 ; control flow
-(define-macro (when test &rest body)
+(define-macro (when test #:rest body)
   `(if ,test (progn ,@body)))
 
-(define-macro (unless test &rest body)
+(define-macro (unless test #:rest body)
   `(if (not ,test) (progn ,@body)))
 
-(define-macro (let* bindings &rest body)
+(define-macro (let* bindings #:rest body)
   (if (null? bindings)
     `(progn ,@body)
     `(let (,(car bindings))
@@ -47,7 +47,7 @@ class StandardEnvironment extends Environment {
 (define (cdddr x) (cdr (cdr (cdr x))))
 
 ; list functions
-(define (list &rest args) args)
+(define* (list #:rest args) args)
 
 (define (list? x)
   (or (null? x)
@@ -97,7 +97,7 @@ class StandardEnvironment extends Environment {
       (proc value (car list))
       proc)))
 
-(define (member element list &optional compare-fn)
+(define* (member element list #:optional compare-fn)
   (if list
     (or ((or compare-fn =) element (car list))
         (member element (cdr list) compare-fn))))
