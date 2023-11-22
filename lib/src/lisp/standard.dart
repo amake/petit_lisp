@@ -19,13 +19,13 @@ class StandardEnvironment extends Environment {
 (define false (or))
 
 ; control flow
-(define-macro (when test #:rest body)
+(define-macro (when test . body)
   `(if ,test (progn ,@body)))
 
-(define-macro (unless test #:rest body)
+(define-macro (unless test . body)
   `(if (not ,test) (progn ,@body)))
 
-(define-macro (let* bindings #:rest body)
+(define-macro (let* bindings . body)
   (if (null? bindings)
     `(progn ,@body)
     `(let (,(car bindings))
@@ -47,7 +47,7 @@ class StandardEnvironment extends Environment {
 (define (cdddr x) (cdr (cdr (cdr x))))
 
 ; list functions
-(define* (list #:rest args) args)
+(define* (list . args) args)
 
 (define (list? x)
   (or (null? x)
@@ -105,7 +105,7 @@ class StandardEnvironment extends Environment {
 (define (memq element list)
   (member element list eq?))
 
-(define-macro (cond &rest clauses)
+(define-macro (cond . clauses)
   (when clauses
     (let* ((clause (car clauses))
            (tempcond (make-symbol " cond"))

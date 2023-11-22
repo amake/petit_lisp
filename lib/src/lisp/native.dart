@@ -67,7 +67,7 @@ class NativeEnvironment extends Environment {
           final Cons head = args.head;
           if (head.head is Name) {
             return env.define(
-                head.head, lambdaBuilder(env, Cons(head.tail, args.tail)));
+                head.head, lambdaBuilder(env, Cons(head.cdr, args.tail)));
           }
         }
         throw ArgumentError('Invalid define: $args');
@@ -84,8 +84,12 @@ class NativeEnvironment extends Environment {
         var values =
             shouldEvalArgs ? evalArguments(evalEnv, evalArgs) : evalArgs;
         while (names != null) {
+          if (names is Name) {
+            inner.define(names, values);
+            break;
+          }
           inner.define(names.head, values.head);
-          names = names.tail;
+          names = names.cdr;
           values = values.tail;
         }
         return evalList(inner, lambdaArgs.tail);
@@ -103,6 +107,10 @@ class NativeEnvironment extends Environment {
             shouldEvalArgs ? evalArguments(evalEnv, evalArgs) : evalArgs;
         var optional = false;
         while (names != null) {
+          if (names is Name) {
+            inner.define(names, values);
+            break;
+          }
           if (!optional && __isOptional(names.head)) {
             optional = true;
             names = names.tail;
@@ -125,7 +133,7 @@ class NativeEnvironment extends Environment {
             break;
           }
           inner.define(names.head, values.head);
-          names = names.tail;
+          names = names.cdr;
           values = values.tail;
         }
         return evalList(inner, lambdaArgs.tail);
@@ -143,7 +151,7 @@ class NativeEnvironment extends Environment {
       if (head.head is Name) {
         return env.define(
           head.head,
-          _macroImpl(env, Cons(head.tail, args.tail)),
+          _macroImpl(env, Cons(head.cdr, args.tail)),
         );
       }
     }

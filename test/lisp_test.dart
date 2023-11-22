@@ -440,12 +440,30 @@ void main() {
       expect(exec('(define (a x) x) (a 6)'), 6);
       expect(() => exec('(define 12)'), throwsArgumentError);
     });
+    test('Define (dotted rest)', () {
+      expect(exec('(define (foo . rest) (length rest)) (foo 2 4)'), 2);
+      expect(exec('(define (foo x y . rest) (length rest)) (foo 2 4)'), 0);
+      expect(exec('(define (foo x y . rest) (length rest)) (foo 2 4 6)'), 1);
+      expect(exec('(define (foo x y . rest) (length rest)) (foo 2 4 6 8)'), 2);
+    });
     test('Lambda', () {
       expect(exec('((lambda () 1) 2)'), 1);
       expect(exec('((lambda (x) x) 2)'), 2);
       expect(exec('((lambda (x) (+ x x)) 2)'), 4);
       expect(exec('((lambda (x y) (+ x y)) 2 4)'), 6);
       expect(exec('((lambda (x y z) (+ x y z)) 2 4 6)'), 12);
+    });
+    test('Lambda (dotted rest)', () {
+      expect(exec('((lambda (x y . rest) (length rest)) 2 4)'), 0);
+      expect(exec('((lambda (x y . rest) (length rest)) 2 4 6)'), 1);
+      expect(exec('((lambda (x y . rest) (length rest)) 2 4 6 8)'), 2);
+    });
+    test('Lambda*', () {
+      expect(exec('((lambda* () 1) 2)'), 1);
+      expect(exec('((lambda* (x) x) 2)'), 2);
+      expect(exec('((lambda* (x) (+ x x)) 2)'), 4);
+      expect(exec('((lambda* (x y) (+ x y)) 2 4)'), 6);
+      expect(exec('((lambda* (x y z) (+ x y z)) 2 4 6)'), 12);
     });
     test('Lambda* (#:optional)', () {
       expect(exec('((lambda* (x y #:optional z) (+ x y)) 2 4)'), 6);
@@ -468,6 +486,9 @@ void main() {
         () => exec('((lambda* (x y #:rest) (+ x y)) 2 4)'),
         throwsArgumentError,
       );
+      expect(exec('((lambda* (x y . rest) (length rest)) 2 4)'), 0);
+      expect(exec('((lambda* (x y . rest) (length rest)) 2 4 6)'), 1);
+      expect(exec('((lambda* (x y . rest) (length rest)) 2 4 6 8)'), 2);
     });
     test('Macro', () {
       final env = standard.create();
@@ -1175,7 +1196,7 @@ void main() {
     test('Macro (make-symbol)', () {
       final env = standard.create()..define(Name('foo'), 0);
       exec(
-          '(define-macro (for var from init to final do #:rest body)'
+          '(define-macro (for var from init to final do . body)'
           '  (let ((tempvar (make-symbol "max")))'
           '    `(let ((,var ,init)'
           '           (,tempvar ,final))'
