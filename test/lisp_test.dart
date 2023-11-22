@@ -1107,6 +1107,15 @@ void main() {
       expect(exec('(cond (false 1) (false 2) (true 3))'), 3);
       expect(exec('(cond (null 1) ((> 1 2) 2) (true 3))'), 3);
     });
+    test('cond (laziness)', () {
+      final env = standard.create();
+      env.define(Name('foo'), 0);
+      expect(
+          exec('(cond (null (set! foo 3)) ((> 1 2) (set! foo 2)) (true foo))',
+              env),
+          0);
+      expect(env[Name('foo')], 0);
+    });
   });
   group('Examples', () {
     test('Fibonacci', () {
