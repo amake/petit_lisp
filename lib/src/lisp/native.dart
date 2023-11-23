@@ -21,7 +21,8 @@ class NativeEnvironment extends Environment {
     define(Name('set!'), _set);
     define(Name('print'), _print);
     define(Name('progn'), _progn);
-    define(Name('define-macro'), _defineMacro);
+    define(Name('define-macro'), _defineMacro(_macro));
+    define(Name('define-macro*'), _defineMacro(_macroStar));
     define(Name('make-symbol'), _makeSymbol);
     define(Name('gensym'), _gensym);
 
@@ -145,20 +146,26 @@ class NativeEnvironment extends Environment {
   static dynamic __isRest(dynamic arg) =>
       arg == Name('&rest') || arg == Name('#:rest');
 
-  static dynamic _defineMacro(Environment env, dynamic args) {
-    if (args.head is Cons) {
-      final Cons head = args.head;
-      if (head.head is Name) {
-        return env.define(
-          head.head,
-          _macroImpl(env, Cons(head.cdr, args.tail)),
-        );
-      }
-    }
-    throw ArgumentError('Invalid macro: $args');
+  static dynamic _defineMacro(_LambdaBuilder lambdaBuilder) =>
+      (Environment env, dynamic args) {
+        if (args.head is Cons) {
+          final Cons head = args.head;
+          if (head.head is Name) {
+            return env.define(
+              head.head,
+              lambdaBuilder(env, Cons(head.cdr, args.tail)),
+            );
+          }
+        }
+        throw ArgumentError('Invalid macro: $args');
+      };
+
+  static Lambda _macro(Environment lambdaEnv, dynamic lambdaArgs) {
+    final generator = _lambda(lambdaEnv, lambdaArgs, shouldEvalArgs: false);
+    return (evalEnv, evalArgs) => eval(evalEnv, generator(evalEnv, evalArgs));
   }
 
-  static Lambda _macroImpl(Environment lambdaEnv, dynamic lambdaArgs) {
+  static Lambda _macroStar(Environment lambdaEnv, dynamic lambdaArgs) {
     final generator = _lambdaStar(lambdaEnv, lambdaArgs, shouldEvalArgs: false);
     return (evalEnv, evalArgs) => eval(evalEnv, generator(evalEnv, evalArgs));
   }

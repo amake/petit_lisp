@@ -500,6 +500,20 @@ void main() {
           env);
       expect(env[Name('x')], 2);
     });
+    test('Macro*', () {
+      final env = standard.create();
+      env.define(Name('x'), 0);
+      env.define(Name('y'), 0);
+      exec(
+          '(define-macro* (inc2 var1 #:optional var2)'
+          '  `(progn (set! ,var1 (+ 1 ,var1))'
+          '          ,(when var2 `(set! ,var2 (+ 1 ,var2)))))'
+          '(inc2 x)'
+          '(inc2 x y)',
+          env);
+      expect(env[Name('x')], 2);
+      expect(env[Name('y')], 1);
+    });
     test('Make-symbol', () {
       final symbols = List.generate(10, (_) => exec('(make-symbol "foo")'));
       for (final sym in symbols) {
