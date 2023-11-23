@@ -494,8 +494,7 @@ void main() {
       final env = standard.create();
       env.define(Name('x'), 0);
       exec(
-          '(define-macro (inc var)'
-          "  (cons 'set! (cons var (cons (cons '+ (cons 1 (cons var '()))) '()))))"
+          '(define-macro (inc var) `(set! ,var (+ 1 ,var)))'
           '(inc x)'
           '(inc x)',
           env);
