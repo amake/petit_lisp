@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.4.0
+
+* Optional and rest args keywords are now preferably `#:optional` and `#:rest`
+  * They are recognized by `lambda*`, `define*`, and `define-macro*`, but not
+    `lambda`, `define`, or `define-macro`
+  * `&optional` and `&rest` are recognized as synonyms
+* Dotted rest args are supported everywhere
+* Add build-in functions: `pair?`, `list?`, `let*`, `cond`
+
 ## 6.3.0
 
 * "Truthy" logic: `false` and `null` are falsy; others are truthy
