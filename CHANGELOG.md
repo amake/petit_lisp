@@ -7,7 +7,7 @@
     `lambda`, `define`, or `define-macro`
   * `&optional` and `&rest` are recognized as synonyms
 * Dotted rest args are supported everywhere
-* Add build-in functions: `pair?`, `list?`, `let*`, `cond`
+* Add built-in functions: `pair?`, `list?`, `let*`, `cond`
 
 ## 6.3.0
 
