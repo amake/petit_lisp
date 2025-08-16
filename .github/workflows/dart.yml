@@ -27,6 +27,9 @@ jobs:
         run: dart pub upgrade --no-precompile
       - name: "Dart Analyzer"
         run: dart analyze --fatal-infos .
+      - uses: amake/dart-flutter-compat@v0-pre0
+        with:
+          channel: stable
       - name: "Dart Formatter"
         run: dart format --output=none --set-exit-if-changed .
       - name: "VM Tests"
