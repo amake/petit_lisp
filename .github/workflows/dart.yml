@@ -47,3 +47,4 @@ jobs:
       - uses: amake/dart-flutter-compat@v0-pre2
         with:
           channel: stable
+          cache: true
