@@ -27,9 +27,6 @@ jobs:
         run: dart pub upgrade --no-precompile
       - name: "Dart Analyzer"
         run: dart analyze --fatal-infos .
-      - uses: amake/dart-flutter-compat@v0-pre2
-        with:
-          channel: stable
       - name: "Dart Formatter"
         run: dart format --output=none --set-exit-if-changed .
       - name: "VM Tests"
@@ -42,3 +39,11 @@ jobs:
           dart pub global run coverage:test_with_coverage --test test/lisp_test.dart
       - name: "Upload coverage"
         uses: codecov/codecov-action@v5
+  check:
+    name: "Check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: amake/dart-flutter-compat@v0-pre2
+        with:
+          channel: stable
