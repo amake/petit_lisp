@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.5.0
+
+* Update petitparser to 7.0.1
+
 ## 6.4.0
 
 * Optional and rest args keywords are now preferably `#:optional` and `#:rest`
