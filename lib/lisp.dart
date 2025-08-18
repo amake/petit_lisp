@@ -2,6 +2,7 @@
 ///
 /// The code is reasonably complete to run and evaluate reasonably complex
 /// programs from the console or the web browser.
+// ignore: unnecessary_library_name
 library lisp;
 
 export 'src/lisp/cons.dart';
